@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test</title>
+<style>
+body { font-family: sans-serif; padding: 40px 20px; background: #f1f5f9; }
+.card { background: white; border-radius: 12px; padding: 30px; max-width: 400px; margin: 0 auto; box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+h1 { color: #6366f1; margin-bottom: 10px; }
+p { color: #64748b; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>It works!</h1>
+  <p id="msg">JavaScript is loading...</p>
+</div>
+<script>
+document.getElementById('msg').textContent = 'JavaScript works too!';
+</script>
+</body>
+</html>
