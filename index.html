@@ -1,490 +1,1388 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="manifest" href="./manifest.json">
-<title>Gmail Inbox Cleaner</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;color:#0f172a;min-height:100vh}
-header{background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#3b82f6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;flex-shrink:0}
-.logo-title{font-size:1rem;font-weight:700}
-.logo-title span{color:#6366f1}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:600;min-height:38px}
-.btn-primary{background:#6366f1;color:#fff}
-.btn-secondary{background:#f8fafc;color:#0f172a;border:1px solid #e2e8f0}
-.btn-danger{background:#ef4444;color:#fff}
-.btn-sm{padding:6px 12px;font-size:.8rem;min-height:32px}
-main{padding:20px}
-.wrap{max-width:600px;margin:0 auto}
-.card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:16px}
-.row-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.acct-sel{flex:1;max-width:220px;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;font-size:.85rem;color:#0f172a}
-.center{text-align:center;padding:40px 24px}
-.center h2{margin-bottom:8px}
-.center p{color:#64748b;margin-bottom:24px;font-size:.9rem}
-.msg{border-radius:8px;padding:12px 16px;font-size:.85rem;margin-bottom:16px;display:none}
-.msg.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;display:block}
-.msg.err{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;display:block}
-.msg.ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;display:block}
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
-.stat{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.stat-icon{font-size:1.2rem;margin-bottom:4px}
-.stat-label{font-size:.7rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-.stat-value{font-size:1.6rem;font-weight:800;line-height:1.2}
-.stat-sub{font-size:.72rem;color:#64748b;margin-top:2px}
-.stat.danger .stat-value{color:#ef4444}
-.stat.warning .stat-value{color:#f59e0b}
-.stat.accent .stat-value{color:#6366f1}
-.table-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:80px}
-.toolbar{padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.ftabs{display:flex;gap:4px;flex-wrap:wrap}
-.ftab{padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:600;border:1px solid #e2e8f0;background:transparent;color:#64748b;cursor:pointer}
-.ftab.on{background:#6366f1;color:#fff;border-color:#6366f1}
-.sender-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid #e2e8f0}
-.sender-row:last-child{border-bottom:none}
-.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:#10b981}
-.dot.spam{background:#ef4444}
-.dot.newsletter{background:#f59e0b}
-.sinfo{flex:1;min-width:0}
-.sname{font-weight:600;font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.saddr{font-size:.72rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.scnt{font-size:.75rem;color:#64748b;font-weight:600;flex-shrink:0}
-.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:.7rem;font-weight:700;flex-shrink:0}
-.badge.spam{background:#fef2f2;color:#ef4444}
-.badge.newsletter{background:#fffbeb;color:#f59e0b}
-#bulk-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:#0f172a;color:#fff;padding:12px 20px;border-radius:40px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:200;transition:transform .3s;font-size:.875rem}
-#bulk-bar.on{transform:translateX(-50%) translateY(0)}
-#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#f1f5f9;padding:10px 20px;border-radius:20px;font-size:.875rem;z-index:300;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
-#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-.prog-wrap{background:#e2e8f0;border-radius:4px;height:6px;margin:10px 0;overflow:hidden}
-.prog-bar{height:100%;background:#6366f1;border-radius:4px;transition:width .3s;width:0}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid #e2e8f0;border-top-color:#6366f1;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.hidden{display:none!important}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" id="theme-meta" content="#6366f1">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Inbox Cleaner">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  <title>Gmail Inbox Cleaner</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+
+  <style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { height: 100%; }
+  body { min-height: 100%; overscroll-behavior-y: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif; font-size: 15px; line-height: 1.5; transition: background .2s, color .2s; }
+
+  :root {
+    --bg: #f1f5f9; --surf: #ffffff; --surf2: #f8fafc; --bdr: #e2e8f0;
+    --txt: #0f172a; --muted: #64748b; --accent: #6366f1; --accent2: #4f46e5;
+    --red: #ef4444; --red-bg: #fef2f2; --amber: #f59e0b; --amber-bg: #fffbeb;
+    --green: #10b981; --green-bg: #ecfdf5; --blue: #3b82f6; --blue-bg: #eff6ff;
+    --sh: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    --sh2: 0 4px 16px rgba(0,0,0,.10); --rad: 12px;
+    --safe-t: env(safe-area-inset-top,0px); --safe-b: env(safe-area-inset-bottom,0px);
+  }
+  [data-theme="dark"] {
+    --bg: #0f172a; --surf: #1e293b; --surf2: #0f172a; --bdr: #334155;
+    --txt: #f1f5f9; --muted: #94a3b8; --accent: #818cf8; --accent2: #6366f1;
+    --red: #f87171; --red-bg: #1e1015; --amber: #fbbf24; --amber-bg: #1c1507;
+    --green: #34d399; --green-bg: #052e16; --blue: #60a5fa; --blue-bg: #0c1a2e;
+    --sh: 0 1px 3px rgba(0,0,0,.3); --sh2: 0 4px 24px rgba(0,0,0,.4);
+  }
+  body { background: var(--bg); color: var(--txt); }
+
+  #app { display: flex; flex-direction: column; min-height: 100dvh; }
+
+  header {
+    background: var(--surf); border-bottom: 1px solid var(--bdr);
+    padding: calc(14px + var(--safe-t)) 20px 14px;
+    display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 100; box-shadow: var(--sh);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .logo-icon { width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--blue)); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .logo-text { font-size: 1rem; font-weight: 700; }
+  .logo-text span { color: var(--accent); }
+
+  .acct-select { flex: 1; max-width: 260px; padding: 7px 12px; background: var(--surf2); border: 1px solid var(--bdr); border-radius: 8px; font-size: .85rem; color: var(--txt); cursor: pointer; outline: none; }
+  .acct-select:focus { border-color: var(--accent); }
+
+  .hdr-actions { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+
+  .scan-progress { flex: 1; max-width: 200px; display: none; align-items: center; gap: 8px; font-size: .8rem; color: var(--muted); }
+  .scan-progress.visible { display: flex; }
+  .scan-bar-wrap { flex: 1; height: 4px; background: var(--bdr); border-radius: 2px; overflow: hidden; }
+  .scan-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width .3s; width: 0%; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: .85rem; font-weight: 600; transition: all .15s; min-height: 38px; white-space: nowrap; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+  .btn-primary   { background: var(--accent); color: #fff; }
+  .btn-primary:hover   { background: var(--accent2); }
+  .btn-secondary { background: var(--surf2); color: var(--txt); border: 1px solid var(--bdr); }
+  .btn-secondary:hover { background: var(--bdr); }
+  .btn-danger    { background: var(--red); color: #fff; }
+  .btn-danger:hover    { opacity: .88; }
+  .btn-success   { background: var(--green); color: #fff; }
+  .btn-success:hover   { opacity: .88; }
+  .btn-ghost     { background: transparent; color: var(--muted); }
+  .btn-ghost:hover     { background: var(--bdr); color: var(--txt); }
+  .btn-icon      { padding: 8px; border-radius: 8px; font-size: 1rem; }
+  .btn-sm        { padding: 6px 12px; font-size: .8rem; min-height: 32px; }
+
+  main { flex: 1; padding: 20px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  .setup-card { max-width: 540px; margin: 32px auto; background: var(--surf); border-radius: var(--rad); border: 1px solid var(--bdr); box-shadow: var(--sh2); overflow: hidden; }
+  .setup-hero { background: linear-gradient(135deg, var(--accent), var(--blue)); padding: 32px 28px; text-align: center; color: #fff; }
+  .setup-hero .icon { font-size: 2.5rem; margin-bottom: 10px; }
+  .setup-hero h1 { font-size: 1.4rem; font-weight: 700; }
+  .setup-hero p  { opacity: .85; margin-top: 6px; font-size: .9rem; }
+  .setup-body { padding: 28px; }
+  .setup-step { display: flex; gap: 14px; margin-bottom: 16px; align-items: flex-start; }
+  .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-size: .8rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .step-body { font-size: .875rem; padding-top: 4px; }
+  .step-body strong { color: var(--txt); }
+  code { background: var(--surf2); border: 1px solid var(--bdr); padding: 1px 6px; border-radius: 4px; font-size: .82em; word-break: break-all; }
+  .cid-row { display: flex; gap: 8px; margin-top: 20px; }
+  .cid-input { flex: 1; padding: 10px 14px; background: var(--surf2); color: var(--txt); border: 2px solid var(--bdr); border-radius: 8px; font-size: .875rem; outline: none; transition: border-color .2s; }
+  .cid-input:focus { border-color: var(--accent); }
+
+  .empty-state { text-align: center; padding: 60px 24px; }
+  .empty-icon { font-size: 3.5rem; margin-bottom: 16px; }
+  .empty-state h2 { font-size: 1.2rem; margin-bottom: 8px; }
+  .empty-state p  { color: var(--muted); margin-bottom: 24px; }
+
+  .scan-prompt { background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--rad); padding: 40px; text-align: center; box-shadow: var(--sh); }
+  .scan-prompt h2 { font-size: 1.1rem; margin-bottom: 8px; }
+  .scan-prompt p  { color: var(--muted); margin-bottom: 24px; font-size: .9rem; }
+
+  .last-scan-info { font-size: .78rem; color: var(--muted); margin-top: 16px; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+  @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+  .stat-card { background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--rad); padding: 18px 20px; box-shadow: var(--sh); cursor: default; transition: box-shadow .2s, transform .2s; }
+  .stat-card.clickable { cursor: pointer; }
+  .stat-card.clickable:hover { box-shadow: var(--sh2); transform: translateY(-1px); }
+  .stat-card.active { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+  .stat-icon { font-size: 1.4rem; margin-bottom: 8px; }
+  .stat-label { font-size: .75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+  .stat-value { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+  .stat-sub   { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+  .stat-card.danger .stat-value  { color: var(--red); }
+  .stat-card.warning .stat-value { color: var(--amber); }
+  .stat-card.success .stat-value { color: var(--green); }
+  .stat-card.accent  .stat-value { color: var(--accent); }
+
+  .quick-actions { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+
+  .charts-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
+  @media (min-width: 800px) { .charts-row { grid-template-columns: 3fr 2fr; } }
+  .chart-card { background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--rad); padding: 20px; box-shadow: var(--sh); }
+  .chart-title { font-size: .85rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 16px; }
+  .chart-wrap { position: relative; }
+  .breakdown-list { display: flex; flex-direction: column; gap: 12px; }
+  .breakdown-item { display: flex; align-items: center; gap: 10px; }
+  .bk-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .bk-label { font-size: .875rem; flex: 1; }
+  .bk-count { font-size: .875rem; font-weight: 700; }
+  .bk-bar-wrap { height: 6px; background: var(--bdr); border-radius: 3px; margin-top: 4px; overflow: hidden; }
+  .bk-bar { height: 100%; border-radius: 3px; transition: width .6s ease; }
+
+  .table-card { background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--rad); box-shadow: var(--sh); overflow: hidden; margin-bottom: 80px; }
+  .table-toolbar { padding: 14px 16px; border-bottom: 1px solid var(--bdr); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .filter-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .filter-tab { padding: 5px 12px; border-radius: 20px; font-size: .8rem; font-weight: 600; border: 1px solid var(--bdr); background: transparent; color: var(--muted); cursor: pointer; transition: all .15s; white-space: nowrap; }
+  .filter-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .filter-tab .tab-count { margin-left: 4px; opacity: .75; }
+
+  .search-wrap { flex: 1; min-width: 160px; position: relative; }
+  .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 15px; opacity: .45; }
+  .search-input { width: 100%; padding: 8px 12px 8px 32px; background: var(--surf2); color: var(--txt); border: 1px solid var(--bdr); border-radius: 8px; font-size: .85rem; outline: none; }
+  .search-input:focus { border-color: var(--accent); }
+
+  .sort-select { padding: 8px 10px; background: var(--surf2); color: var(--txt); border: 1px solid var(--bdr); border-radius: 8px; font-size: .8rem; outline: none; }
+
+  .sender-row { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--bdr); transition: background .12s, opacity .3s; }
+  .sender-row:last-child { border-bottom: none; }
+  .sender-row:hover { background: var(--surf2); }
+  .sender-row.fading { opacity: .15; pointer-events: none; }
+  .sender-row.whitelisted-row { opacity: .55; }
+
+  .row-cb { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--accent); cursor: pointer; }
+  .risk-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .risk-dot.spam       { background: var(--red); }
+  .risk-dot.newsletter { background: var(--amber); }
+  .risk-dot.regular    { background: var(--green); }
+  .risk-dot.whitelisted { background: var(--accent); }
+
+  .sender-info { flex: 1; min-width: 0; cursor: pointer; }
+  .sender-name { font-weight: 600; font-size: .875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sender-addr { font-size: .75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .count-col { flex-shrink: 0; width: 100px; display: none; }
+  @media (min-width: 600px) { .count-col { display: block; } }
+  .count-bar-wrap { height: 5px; background: var(--bdr); border-radius: 3px; margin-bottom: 3px; overflow: hidden; }
+  .count-bar { height: 100%; border-radius: 3px; transition: width .6s ease; }
+  .count-num { font-size: .75rem; color: var(--muted); font-weight: 600; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: .72rem; font-weight: 700; flex-shrink: 0; }
+  .badge.spam       { background: var(--red-bg);   color: var(--red);   }
+  .badge.newsletter { background: var(--amber-bg); color: var(--amber); }
+  .badge.whitelisted { background: var(--blue-bg); color: var(--blue); }
+  .badge.regular    { display: none; }
+
+  .row-action { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .no-results { text-align: center; padding: 32px; color: var(--muted); font-size: .9rem; }
+
+  #bulk-bar {
+    position: fixed; bottom: calc(16px + var(--safe-b)); left: 50%;
+    transform: translateX(-50%) translateY(90px);
+    background: var(--txt); color: var(--surf);
+    padding: 12px 20px; border-radius: 40px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.28);
+    z-index: 200; transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+    white-space: nowrap; font-size: .875rem;
+  }
+  #bulk-bar.visible { transform: translateX(-50%) translateY(0); }
+  #bulk-bar .bulk-label { font-weight: 600; }
+  #bulk-bar .bulk-sub   { opacity: .6; font-size: .78rem; }
+  #bulk-bar .btn-bulk-trash { background: var(--red); color: #fff; }
+  #bulk-bar .btn-bulk-read  { background: var(--blue); color: #fff; }
+  #bulk-bar .btn-bulk-cancel { background: rgba(255,255,255,.15); color: inherit; }
+
+  #toast {
+    position: fixed; bottom: calc(90px + var(--safe-b)); left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: #1e293b; color: #f1f5f9;
+    padding: 10px 20px; border-radius: 20px; font-size: .875rem;
+    z-index: 350; opacity: 0; pointer-events: none;
+    transition: opacity .2s, transform .2s; white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  }
+  [data-theme="dark"] #toast { background: #f1f5f9; color: #0f172a; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  #undo-bar {
+    position: fixed; bottom: calc(140px + var(--safe-b)); left: 50%;
+    transform: translateX(-50%) translateY(90px);
+    background: #1e293b; color: #f1f5f9;
+    padding: 10px 16px; border-radius: 12px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    z-index: 300; transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+    font-size: .875rem;
+  }
+  [data-theme="dark"] #undo-bar { background: #f1f5f9; color: #0f172a; }
+  #undo-bar.visible { transform: translateX(-50%) translateY(0); }
+  .undo-btn { background: var(--accent); color: #fff; padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: .8rem; font-weight: 600; }
+
+  .spinner { width: 16px; height: 16px; border: 2px solid var(--bdr); border-top-color: var(--accent); border-radius: 50%; animation: spin .65s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Modal / sheet */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 400; opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    background: var(--surf); border-radius: 20px 20px 0 0;
+    padding: 20px; width: 100%; max-width: 640px; max-height: 75dvh;
+    overflow-y: auto; transform: translateY(60px); transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .modal-title { font-size: 1rem; font-weight: 700; flex: 1; }
+  .modal-close { padding: 6px 10px; cursor: pointer; background: var(--surf2); border: 1px solid var(--bdr); border-radius: 8px; font-size: .85rem; color: var(--muted); }
+  .modal-email { font-size: .8rem; color: var(--muted); margin-bottom: 16px; }
+
+  .subject-list { display: flex; flex-direction: column; gap: 8px; }
+  .subject-item { padding: 10px 14px; background: var(--surf2); border-radius: 8px; border-left: 3px solid var(--accent); }
+  .subject-item .subj-text { font-size: .875rem; font-weight: 500; }
+  .subject-item .subj-date { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+
+  /* Settings panel */
+  .settings-card { background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--rad); padding: 20px; margin-bottom: 16px; box-shadow: var(--sh); }
+  .settings-card h3 { font-size: .85rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 16px; }
+  .setting-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--bdr); }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-label { flex: 1; }
+  .setting-label strong { font-size: .875rem; display: block; }
+  .setting-label small { font-size: .75rem; color: var(--muted); }
+
+  /* Toggle */
+  .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-track { position: absolute; inset: 0; border-radius: 24px; background: var(--bdr); transition: background .2s; cursor: pointer; }
+  .toggle-track::after { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .toggle input:checked + .toggle-track { background: var(--accent); }
+  .toggle input:checked + .toggle-track::after { transform: translateX(20px); }
+
+  /* Error banner */
+  .error-banner { background: var(--red-bg); border: 1px solid var(--red); color: var(--red); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: .85rem; display: flex; align-items: center; gap: 10px; }
+  .error-banner button { margin-left: auto; background: var(--red); color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: .8rem; cursor: pointer; font-weight: 600; }
+
+  .divider { height: 1px; background: var(--bdr); margin: 16px 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  select, input { color-scheme: inherit; }
+
+  @media (max-width: 479px) {
+    main { padding: 12px; }
+    header { padding: calc(10px + var(--safe-t)) 12px 10px; gap: 8px; }
+    .logo-text { display: none; }
+    .acct-select { max-width: 140px; font-size: .8rem; }
+    .stat-value { font-size: 1.5rem; }
+    .badge { display: none; }
+  }
+  </style>
 </head>
+
 <body>
-<header>
-  <div class="logo">&#9993;</div>
-  <div class="logo-title">Inbox <span>Cleaner</span></div>
-</header>
-<main><div class="wrap">
-
-<div id="msg" class="msg"></div>
-
-<div class="card">
-  <div class="row-bar">
-    <select id="acct-sel" class="acct-sel" onchange="switchAccount(this.value)">
-      <option value="">Select account...</option>
-    </select>
-    <button class="btn btn-primary btn-sm" onclick="addAccount()">+ Add Account</button>
-  </div>
-</div>
-
-<div id="sec-scan" class="card center hidden">
-  <h2>Ready to scan</h2>
-  <p>Scan your inbox to group emails by sender</p>
-  <button class="btn btn-primary" onclick="startScan()">Scan My Inbox</button>
-</div>
-
-<div id="sec-scanning" class="card center hidden">
-  <p><span class="spin"></span><span id="scan-status">Scanning...</span></p>
-  <div class="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
-</div>
-
-<div id="sec-results" class="hidden">
-  <div class="stats-grid" id="stats-grid"></div>
-  <div class="table-card">
-    <div class="toolbar">
-      <div class="ftabs" id="ftabs"></div>
-      <button class="btn btn-secondary btn-sm" onclick="selectAll()">Select all</button>
+<div id="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">✉</div>
+      <div class="logo-text">Inbox <span>Cleaner</span></div>
     </div>
-    <div id="sender-rows"></div>
-  </div>
+
+    <select class="acct-select" id="acct-select" onchange="App.switchAccount(this.value)">
+      <option value="">— Select account —</option>
+    </select>
+
+    <div class="scan-progress" id="scan-progress">
+      <div class="spinner"></div>
+      <div style="flex:1">
+        <div class="scan-bar-wrap"><div class="scan-bar" id="scan-bar"></div></div>
+        <div id="scan-text" style="font-size:.72rem;margin-top:2px">Scanning…</div>
+      </div>
+    </div>
+
+    <div class="hdr-actions">
+      <button class="btn btn-primary btn-sm" id="scan-btn" onclick="App.scan()" style="display:none">Scan</button>
+      <button class="btn btn-secondary btn-sm btn-icon" id="theme-btn" onclick="App.toggleTheme()" title="Toggle dark mode">🌙</button>
+      <button class="btn btn-secondary btn-sm btn-icon" id="settings-btn" onclick="App.toggleSettings()" title="Settings" style="display:none">⚙️</button>
+      <button class="btn btn-secondary btn-sm" id="add-acct-btn" style="display:none" onclick="App.addAccount()">+ Account</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="container" id="main-content"></div>
+  </main>
 </div>
 
-</div></main>
-
+<!-- Bulk action bar -->
 <div id="bulk-bar">
   <div>
-    <div id="bulk-label" style="font-weight:700"></div>
-    <div id="bulk-sub" style="opacity:.6;font-size:.78rem"></div>
+    <div class="bulk-label" id="bulk-label">0 senders selected</div>
+    <div class="bulk-sub"   id="bulk-sub"></div>
   </div>
-  <button class="btn btn-danger btn-sm" onclick="trashSelected()">Trash All</button>
-  <button class="btn btn-secondary btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:none" onclick="clearSel()">Cancel</button>
+  <button class="btn btn-sm btn-bulk-read"  onclick="App.markSelectedRead()">✓ Mark Read</button>
+  <button class="btn btn-sm btn-bulk-trash" onclick="App.trashSelected()">🗑 Trash All</button>
+  <button class="btn btn-sm btn-bulk-cancel" onclick="App.clearSelection()">Cancel</button>
 </div>
+
+<!-- Undo bar -->
+<div id="undo-bar">
+  <span id="undo-text">Trashed emails</span>
+  <button class="undo-btn" onclick="App.undoTrash()">Undo</button>
+  <button style="background:none;border:none;color:inherit;cursor:pointer;opacity:.6" onclick="hideUndo()">✕</button>
+</div>
+
+<!-- Toast -->
 <div id="toast"></div>
 
+<!-- Email preview modal -->
+<div class="modal-overlay" id="preview-modal" onclick="if(event.target===this)App.closePreview()">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <div class="modal-title" id="preview-title">Recent emails</div>
+      <button class="modal-close" onclick="App.closePreview()">Close</button>
+    </div>
+    <div class="modal-email" id="preview-addr"></div>
+    <div id="preview-body"><div class="spinner" style="margin:20px auto;display:block"></div></div>
+    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap" id="preview-actions"></div>
+  </div>
+</div>
+
 <script>
-var CID = "318021671742-7ng49bifkl36je3e7tl4bf7i47vpcopc.apps.googleusercontent.com";
-var API = "https://gmail.googleapis.com/gmail/v1";
-var REDIR = location.origin + location.pathname;
-var SCOPE = "https://www.googleapis.com/auth/gmail.modify";
+'use strict';
 
-var tokens = {};
-var senders = [];
-var curAcct = null;
-var filter = "all";
+// ══════════════════════════════════════════════════════════════════════
+//  DEVICE
+// ══════════════════════════════════════════════════════════════════════
+const Device = (() => {
+  const ua = navigator.userAgent;
+  const isIOS     = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/.test(ua);
+  const isTouch   = navigator.maxTouchPoints > 0;
+  const isMobile  = (isIOS || isAndroid) || (isTouch && window.innerWidth < 768);
+  const type      = isMobile ? 'mobile' : (isTouch && window.innerWidth < 1280) ? 'tablet' : 'desktop';
+  document.body.dataset.device = type;
+  return { type, isMobile, isIOS };
+})();
 
-function toast(msg) {
-  var el = document.getElementById("toast");
-  el.textContent = msg;
-  el.classList.add("on");
-  setTimeout(function() { el.classList.remove("on"); }, 3500);
-}
+// ══════════════════════════════════════════════════════════════════════
+//  STORAGE
+// ══════════════════════════════════════════════════════════════════════
+const Store = {
+  getClientId:   ()    => localStorage.getItem('gcid') || '',
+  setClientId:   (v)   => localStorage.setItem('gcid', v),
+  getAccounts:   ()    => JSON.parse(localStorage.getItem('accounts') || '[]'),
+  addAccount:    (e)   => { const a = Store.getAccounts(); if (!a.includes(e)) { a.push(e); localStorage.setItem('accounts', JSON.stringify(a)); } },
+  removeAccount: (e)   => { localStorage.setItem('accounts', JSON.stringify(Store.getAccounts().filter(x => x !== e))); localStorage.removeItem('tok_' + e); localStorage.removeItem('scan_' + e); },
+  getTheme:      ()    => localStorage.getItem('theme') || 'light',
+  setTheme:      (t)   => localStorage.setItem('theme', t),
+  getScanSize:   ()    => parseInt(localStorage.getItem('scanSize') || '500'),
+  setScanSize:   (v)   => localStorage.setItem('scanSize', v),
+  getArchiveMode: ()   => localStorage.getItem('archiveMode') === '1',
+  setArchiveMode: (v)  => localStorage.setItem('archiveMode', v ? '1' : '0'),
+  getWhitelist:  ()    => JSON.parse(localStorage.getItem('whitelist') || '[]'),
+  addWhitelist:  (e)   => { const w = Store.getWhitelist(); if (!w.includes(e)) { w.push(e); localStorage.setItem('whitelist', JSON.stringify(w)); } },
+  removeWhitelist: (e) => localStorage.setItem('whitelist', JSON.stringify(Store.getWhitelist().filter(x => x !== e))),
+  saveScan: (acct, senders) => localStorage.setItem('scan_' + acct, JSON.stringify({ senders, ts: Date.now() })),
+  loadScan: (acct)     => { try { return JSON.parse(localStorage.getItem('scan_' + acct) || 'null'); } catch { return null; } },
+};
 
-function msg(text, type) {
-  var el = document.getElementById("msg");
-  el.textContent = text;
-  el.className = "msg " + (type || "info");
-  if (type !== "err") setTimeout(function() { el.className = "msg"; }, 5000);
-}
+document.documentElement.dataset.theme = Store.getTheme();
 
-function show(id) { document.getElementById(id).classList.remove("hidden"); }
-function hide(id) { document.getElementById(id).classList.add("hidden"); }
+// ══════════════════════════════════════════════════════════════════════
+//  TOKENS  (persisted in localStorage so refresh doesn't sign you out)
+// ══════════════════════════════════════════════════════════════════════
+const Tokens = {
+  set(email, token, expiresIn) {
+    const d = { token, expiry: Date.now() + (expiresIn - 60) * 1000 };
+    try { localStorage.setItem('tok_' + email, JSON.stringify(d)); } catch (_) {}
+    _mem[email] = d;
+  },
+  get(email) {
+    if (_mem[email] && Date.now() < _mem[email].expiry) return _mem[email].token;
+    try {
+      const d = JSON.parse(localStorage.getItem('tok_' + email) || 'null');
+      if (d && Date.now() < d.expiry) { _mem[email] = d; return d.token; }
+      if (d) localStorage.removeItem('tok_' + email);
+    } catch (_) {}
+    return null;
+  },
+  clear(email) { delete _mem[email]; localStorage.removeItem('tok_' + email); },
+};
+const _mem = {};
 
-function addAccount() {
-  var url = "https://accounts.google.com/o/oauth2/v2/auth"
-    + "?client_id=" + encodeURIComponent(CID)
-    + "&redirect_uri=" + encodeURIComponent(REDIR)
-    + "&response_type=token"
-    + "&scope=" + encodeURIComponent(SCOPE)
-    + "&prompt=select_account";
-  location.href = url;
-}
+// ══════════════════════════════════════════════════════════════════════
+//  OAUTH  — redirect flow, no external SDK needed
+// ══════════════════════════════════════════════════════════════════════
+const OAUTH_URL   = 'https://accounts.google.com/o/oauth2/v2/auth';
+const USERINFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo';
+const SCOPE = 'https://www.googleapis.com/auth/gmail.modify email profile';
 
-function checkRedirect() {
-  var h = location.hash;
-  if (!h || h.indexOf("access_token") === -1) return;
-  var p = {};
-  h.replace(/^#/, "").split("&").forEach(function(part) {
-    var kv = part.split("=");
-    p[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || "");
+function startOAuth(hint) {
+  const cid = Store.getClientId();
+  if (!cid) { toast('Paste your Client ID first'); return; }
+  const redirect = location.origin + location.pathname;
+  const p = new URLSearchParams({
+    client_id: cid,
+    redirect_uri: redirect,
+    response_type: 'token',
+    scope: SCOPE,
+    include_granted_scopes: 'true',
   });
-  if (!p.access_token) return;
-  history.replaceState(null, null, location.pathname);
-  var tok = p.access_token;
-  var exp = Date.now() + (parseInt(p.expires_in || "3600") - 60) * 1000;
-  msg("Getting your account info...");
-  fetch(API + "/users/me/profile", { headers: { Authorization: "Bearer " + tok } })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      var email = d.emailAddress;
-      if (!email) { msg("Could not get email — try again", "err"); return; }
-      tokens[email] = { tok: tok, exp: exp };
-      var list = JSON.parse(localStorage.getItem("accts") || "[]");
-      if (list.indexOf(email) === -1) { list.push(email); localStorage.setItem("accts", JSON.stringify(list)); }
-      curAcct = email;
-      loadAccounts();
-      show("sec-scan");
-      msg("Signed in as " + email, "ok");
-    })
-    .catch(function(e) { msg("Error: " + e.message, "err"); });
+  if (hint) { p.set('login_hint', hint); p.set('prompt', 'none'); }
+  else { p.set('prompt', 'select_account'); }
+  location.href = OAUTH_URL + '?' + p.toString();
 }
 
-function loadAccounts() {
-  var list = JSON.parse(localStorage.getItem("accts") || "[]");
-  var sel = document.getElementById("acct-sel");
-  sel.innerHTML = "";
-  var def = document.createElement("option");
-  def.value = ""; def.textContent = "Select account...";
-  sel.appendChild(def);
-  list.forEach(function(a) {
-    var o = document.createElement("option");
-    o.value = a; o.textContent = a;
-    if (a === curAcct) o.selected = true;
-    sel.appendChild(o);
+async function checkRedirect() {
+  const hash = location.hash.slice(1);
+  if (!hash || !hash.includes('access_token')) return;
+  history.replaceState(null, '', location.pathname + location.search);
+
+  const p     = new URLSearchParams(hash);
+  const token = p.get('access_token');
+  const exp   = parseInt(p.get('expires_in') || '3600');
+  const error = p.get('error');
+
+  if (error || !token) { toast('Sign-in failed: ' + (error || 'no token')); return; }
+
+  try {
+    const info = await fetch(USERINFO_URL, { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json());
+    const email = info.email;
+    if (!email) { toast('Could not read email from Google'); return; }
+    Tokens.set(email, token, exp);
+    Store.addAccount(email);
+    UI.currentAcct = email;
+    render();
+    toast('Signed in as ' + email);
+  } catch(e) { toast('Error verifying sign-in: ' + e.message); }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  GMAIL API
+// ══════════════════════════════════════════════════════════════════════
+const GMAIL = 'https://gmail.googleapis.com/gmail/v1';
+
+async function gmailFetch(token, path, opts = {}) {
+  const res = await fetch(GMAIL + path, {
+    ...opts,
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) },
   });
-  if (curAcct) show("sec-scan");
-}
-
-function switchAccount(email) {
-  if (!email) return;
-  curAcct = email; senders = []; filter = "all";
-  hide("sec-results"); hide("sec-scanning"); show("sec-scan");
-}
-
-function getToken() {
-  var t = tokens[curAcct];
-  return (t && Date.now() < t.exp) ? t.tok : null;
-}
-
-function startScan() {
-  var tok = getToken();
-  if (!tok) {
-    var url = "https://accounts.google.com/o/oauth2/v2/auth"
-      + "?client_id=" + encodeURIComponent(CID)
-      + "&redirect_uri=" + encodeURIComponent(REDIR)
-      + "&response_type=token"
-      + "&scope=" + encodeURIComponent(SCOPE)
-      + "&login_hint=" + encodeURIComponent(curAcct || "")
-      + "&prompt=none";
-    location.href = url;
-    return;
+  if (res.status === 401) throw Object.assign(new Error('Token expired — please re-authenticate'), { code: 401 });
+  if (res.status === 403) throw Object.assign(new Error('Permission denied — ensure gmail.modify scope is granted. Sign out and add the account again.'), { code: 403 });
+  if (!res.ok) {
+    let msg = `Gmail API error ${res.status}`;
+    try { const j = await res.json(); msg = j.error?.message || msg; } catch(_) {}
+    throw new Error(msg);
   }
-  doScan(tok);
+  if (res.status === 204) return {};
+  return res.json();
 }
 
-function doScan(tok) {
-  hide("sec-scan"); hide("sec-results"); show("sec-scanning");
-  var ids = [];
-
-  function fetchPage(pt) {
-    var url = API + "/users/me/threads?labelIds=INBOX&maxResults=500&fields=nextPageToken,threads/id";
-    if (pt) url += "&pageToken=" + pt;
-    return fetch(url, { headers: { Authorization: "Bearer " + tok } })
-      .then(function(r) { return r.json(); })
-      .then(function(d) {
-        (d.threads || []).forEach(function(t) { ids.push(t.id); });
-        if (d.nextPageToken && ids.length < 1000) return fetchPage(d.nextPageToken);
-      });
+async function getSenders(token, maxThreads, onProgress) {
+  const ids = [];
+  let pageToken;
+  while (ids.length < maxThreads) {
+    const qs = new URLSearchParams({ labelIds: 'INBOX', maxResults: Math.min(500, maxThreads - ids.length), fields: 'nextPageToken,threads/id' });
+    if (pageToken) qs.set('pageToken', pageToken);
+    const data = await gmailFetch(token, `/users/me/threads?${qs}`);
+    (data.threads || []).forEach(t => ids.push(t.id));
+    pageToken = data.nextPageToken;
+    if (!pageToken) break;
   }
 
-  fetchPage().then(function() {
-    var map = {}, done = 0;
-    var chunks = [];
-    for (var i = 0; i < ids.length; i += 25) chunks.push(ids.slice(i, i + 25));
-    document.getElementById("scan-status").textContent = "Found " + ids.length + " threads...";
+  const map = {};
+  const CHUNK = 20;
+  let done = 0;
+  for (let i = 0; i < ids.length; i += CHUNK) {
+    const chunk = ids.slice(i, i + CHUNK);
+    const results = await Promise.allSettled(
+      chunk.map(id => gmailFetch(token, `/users/me/threads/${id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date&fields=id,messages/payload/headers`))
+    );
+    results.forEach(r => {
+      if (r.status !== 'fulfilled') return;
+      const msgs = r.value.messages || [];
+      if (!msgs.length) return;
+      const hdrs = msgs[0].payload?.headers || [];
+      const from = hdrs.find(h => h.name.toLowerCase() === 'from');
+      if (!from) return;
+      const { name, email } = parseFrom(from.value);
+      if (!email) return;
+      if (!map[email]) map[email] = { name, email, count: 0, threads: [] };
+      map[email].count++;
+      if (map[email].threads.length < 5) {
+        const subj = hdrs.find(h => h.name.toLowerCase() === 'subject');
+        const date = hdrs.find(h => h.name.toLowerCase() === 'date');
+        map[email].threads.push({ id: r.value.id, subject: subj?.value || '(no subject)', date: date?.value || '' });
+      }
+    });
+    done += chunk.length;
+    onProgress?.(done, ids.length);
+  }
 
-    function next(ci) {
-      if (ci >= chunks.length) return Promise.resolve();
-      return Promise.all(chunks[ci].map(function(id) {
-        return fetch(API + "/users/me/threads/" + id + "?format=metadata&metadataHeaders=From&fields=messages/payload/headers",
-          { headers: { Authorization: "Bearer " + tok } })
-          .then(function(r) { return r.json(); })
-          .catch(function() { return {}; });
-      })).then(function(rows) {
-        rows.forEach(function(d) {
-          var msgs = d.messages || [];
-          if (!msgs.length) return;
-          var hdrs = (msgs[0].payload && msgs[0].payload.headers) || [];
-          var fh = "";
-          for (var j = 0; j < hdrs.length; j++) {
-            if (hdrs[j].name.toLowerCase() === "from") { fh = hdrs[j].value; break; }
-          }
-          if (!fh) return;
-          var name = fh, email = fh;
-          var m = fh.match(/^(.*?)\s*<([^>]+)>/);
-          if (m) { name = m[1].trim().replace(/^['"]+|['"]+$/g, ""); email = m[2].trim().toLowerCase(); }
-          else { email = fh.trim().toLowerCase(); }
-          if (!map[email]) map[email] = { name: name, email: email, count: 0 };
-          map[email].count++;
-        });
-        done += chunks[ci].length;
-        document.getElementById("prog-bar").style.width = Math.round(done / ids.length * 100) + "%";
-        document.getElementById("scan-status").textContent = "Scanned " + done + " / " + ids.length;
-        return next(ci + 1);
-      });
+  return Object.values(map).sort((a, b) => b.count - a.count);
+}
+
+function parseFrom(h) {
+  const m = h.match(/^(.*?)\s*<([^>]+)>/);
+  if (m) return { name: m[1].trim().replace(/^["']|["']$/g, ''), email: m[2].trim().toLowerCase() };
+  const e = h.trim().toLowerCase();
+  return { name: e, email: e };
+}
+
+async function trashThreadsFrom(token, senderEmail, onProgress) {
+  let deleted = 0, pt;
+  const trashed = [];
+  while (true) {
+    const qs = new URLSearchParams({ q: `from:${senderEmail} in:inbox`, maxResults: 100, fields: 'nextPageToken,threads/id' });
+    if (pt) qs.set('pageToken', pt);
+    const data = await gmailFetch(token, `/users/me/threads?${qs}`);
+    const threads = data.threads || [];
+    if (!threads.length) break;
+
+    const endpoint = Store.getArchiveMode() ? '/modify' : '/trash';
+    const body = Store.getArchiveMode() ? JSON.stringify({ removeLabelIds: ['INBOX'] }) : undefined;
+
+    const results = await Promise.allSettled(
+      threads.map(t => gmailFetch(token, `/users/me/threads/${t.id}${endpoint}`, { method: 'POST', body }))
+    );
+
+    let batchOk = 0, batchFail = 0;
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled') { batchOk++; trashed.push(threads[i].id); }
+      else batchFail++;
+    });
+
+    if (batchFail > 0 && batchOk === 0) {
+      throw new Error(`Failed to trash emails from ${senderEmail}. ${results[0].reason?.message || ''}`);
     }
 
-    return next(0).then(function() {
-      senders = Object.keys(map).map(function(k) { return map[k]; })
-        .sort(function(a, b) { return b.count - a.count; });
-      senders.forEach(function(s) { s.cat = classify(s); });
-      hide("sec-scanning"); show("sec-results");
-      renderAll();
-      toast("Found " + senders.length + " senders");
-    });
-  }).catch(function(e) {
-    hide("sec-scanning"); show("sec-scan");
-    msg("Scan failed: " + e.message, "err");
-  });
+    deleted += batchOk;
+    onProgress?.(deleted);
+    pt = data.nextPageToken;
+    if (!pt) break;
+  }
+  return { deleted, trashed };
 }
+
+async function markReadFrom(token, senderEmail) {
+  let marked = 0, pt;
+  while (true) {
+    const qs = new URLSearchParams({ q: `from:${senderEmail} in:inbox is:unread`, maxResults: 100, fields: 'nextPageToken,threads/id' });
+    if (pt) qs.set('pageToken', pt);
+    const data = await gmailFetch(token, `/users/me/threads?${qs}`);
+    const threads = data.threads || [];
+    if (!threads.length) break;
+    await Promise.allSettled(
+      threads.map(t => gmailFetch(token, `/users/me/threads/${t.id}/modify`, { method: 'POST', body: JSON.stringify({ removeLabelIds: ['UNREAD'] }) }))
+    );
+    marked += threads.length;
+    pt = data.nextPageToken;
+    if (!pt) break;
+  }
+  return marked;
+}
+
+async function untrashThreads(token, ids) {
+  await Promise.allSettled(ids.map(id => gmailFetch(token, `/users/me/threads/${id}/untrash`, { method: 'POST' })));
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  SPAM / CATEGORY DETECTION
+// ══════════════════════════════════════════════════════════════════════
+const SPAM_EMAIL   = /noreply|no-reply|donotreply|bounce|mailer-daemon|postmaster/i;
+const BULK_EMAIL   = /newsletter|marketing|promo|promotion|deals|offers|campaign|digest|blast|bulk|mass/i;
+const BULK_NAME    = /newsletter|deal|offer|promo|sale|weekly|daily|monthly|digest|update|alert|notification/i;
+const NOTIFY_EMAIL = /notification|alert|update|info@|hello@|hi@|team@|support@|admin@/i;
 
 function classify(s) {
-  var e = s.email, n = (s.name || "").toLowerCase();
-  if (/noreply|no-reply|donotreply|bounce|mailer-daemon|postmaster/i.test(e)) return "spam";
-  if (/newsletter|marketing|promo|deals|offers|campaign|digest|blast|bulk/i.test(e)) return "newsletter";
-  if (/newsletter|deal|offer|promo|sale|weekly|daily|monthly|digest/i.test(n)) return "newsletter";
-  if (/notification|alert|info@|hello@|team@|support@/i.test(e) && s.count >= 5) return "newsletter";
-  if (s.count >= 25) return "newsletter";
-  return "regular";
+  const e = s.email, n = (s.name || '').toLowerCase();
+  if (SPAM_EMAIL.test(e))                        return 'spam';
+  if (BULK_EMAIL.test(e) || BULK_EMAIL.test(n))  return 'newsletter';
+  if (BULK_NAME.test(n))                         return 'newsletter';
+  if (NOTIFY_EMAIL.test(e) && s.count >= 5)      return 'newsletter';
+  if (s.count >= 25)                             return 'newsletter';
+  return 'regular';
 }
 
-function renderAll() {
-  var total = senders.reduce(function(a, s) { return a + s.count; }, 0);
-  var spam = senders.filter(function(s) { return s.cat === "spam"; });
-  var news = senders.filter(function(s) { return s.cat === "newsletter"; });
-  var clean = spam.concat(news).reduce(function(a, s) { return a + s.count; }, 0);
-
-  var grid = document.getElementById("stats-grid");
-  grid.innerHTML = "";
-  [
-    { cls: "accent", icon: "📧", label: "Total Emails", val: total, sub: "in your inbox" },
-    { cls: "", icon: "👥", label: "Senders", val: senders.length, sub: "unique" },
-    { cls: "danger", icon: "🚨", label: "Spam/Bulk", val: spam.length + news.length, sub: (spam.reduce(function(a,s){return a+s.count;},0) + news.reduce(function(a,s){return a+s.count;},0)) + " emails" },
-    { cls: "warning", icon: "🧹", label: "Cleanable", val: clean, sub: "emails to trash" }
-  ].forEach(function(c) {
-    var d = document.createElement("div");
-    d.className = "stat " + c.cls;
-    d.innerHTML = "";
-    var icon = document.createElement("div"); icon.className = "stat-icon"; icon.textContent = c.icon;
-    var lbl = document.createElement("div"); lbl.className = "stat-label"; lbl.textContent = c.label;
-    var val = document.createElement("div"); val.className = "stat-value"; val.textContent = c.val;
-    var sub = document.createElement("div"); sub.className = "stat-sub"; sub.textContent = c.sub;
-    d.appendChild(icon); d.appendChild(lbl); d.appendChild(val); d.appendChild(sub);
-    grid.appendChild(d);
-  });
-
-  var tabs = document.getElementById("ftabs");
-  tabs.innerHTML = "";
-  ["all","spam","newsletter","regular"].forEach(function(f) {
-    var b = document.createElement("button");
-    b.className = "ftab" + (f === filter ? " on" : "");
-    b.textContent = { all:"All", spam:"Spam", newsletter:"Newsletter", regular:"Regular" }[f];
-    b.onclick = function() { setFilter(f); };
-    tabs.appendChild(b);
-  });
-
-  renderRows();
+function annotateSenders(senders) {
+  const whitelist = Store.getWhitelist();
+  return senders.map(s => ({ ...s, cat: whitelist.includes(s.email) ? 'regular' : classify(s), whitelisted: whitelist.includes(s.email) }));
 }
 
-function renderRows() {
-  var list = filter === "all" ? senders : senders.filter(function(s) { return s.cat === filter; });
-  var container = document.getElementById("sender-rows");
-  container.innerHTML = "";
+function computeStats(senders) {
+  const total = senders.reduce((a, s) => a + s.count, 0);
+  const bycat = { spam: { senders: 0, emails: 0 }, newsletter: { senders: 0, emails: 0 }, regular: { senders: 0, emails: 0 } };
+  senders.forEach(s => { bycat[s.cat].senders++; bycat[s.cat].emails += s.count; });
+  return { total, senders: senders.length, bycat, cleanable: bycat.spam.emails + bycat.newsletter.emails };
+}
 
-  if (!list.length) {
-    var empty = document.createElement("div");
-    empty.style.cssText = "padding:32px;text-align:center;color:#64748b";
-    empty.textContent = "No senders in this category";
-    container.appendChild(empty);
+// ══════════════════════════════════════════════════════════════════════
+//  UI STATE
+// ══════════════════════════════════════════════════════════════════════
+const UI = {
+  currentAcct: null,
+  senders: {},
+  scanTs: {},
+  scanning: false,
+  filter: 'all',
+  search: '',
+  sort: 'count',
+  showSettings: false,
+  chart: null,
+  donut: null,
+  lastTrashedIds: [],
+  lastTrashedSenders: [],
+};
+
+// ══════════════════════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════════════════════
+let _toastT;
+function toast(msg, dur = 3500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(_toastT);
+  _toastT = setTimeout(() => el.classList.remove('show'), dur);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  UNDO BAR
+// ══════════════════════════════════════════════════════════════════════
+let _undoT;
+function showUndo(msg, ids, senderData) {
+  UI.lastTrashedIds     = ids;
+  UI.lastTrashedSenders = senderData;
+  document.getElementById('undo-text').textContent = msg;
+  document.getElementById('undo-bar').classList.add('visible');
+  clearTimeout(_undoT);
+  _undoT = setTimeout(hideUndo, 12000);
+}
+function hideUndo() {
+  document.getElementById('undo-bar').classList.remove('visible');
+  UI.lastTrashedIds = [];
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════════════════
+function esc(s) { const d = document.createElement('div'); d.appendChild(document.createTextNode(String(s ?? ''))); return d.innerHTML; }
+function fmt(n) { return n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n); }
+function safeId(s) { return s.replace(/[^a-z0-9]/gi, '_'); }
+function timeAgo(ts) {
+  const secs = Math.floor((Date.now() - ts) / 1000);
+  if (secs < 60) return 'just now';
+  if (secs < 3600) return Math.floor(secs/60) + 'm ago';
+  if (secs < 86400) return Math.floor(secs/3600) + 'h ago';
+  return Math.floor(secs/86400) + 'd ago';
+}
+
+const CAT_COLORS = { spam: 'var(--red)', newsletter: 'var(--amber)', regular: 'var(--green)' };
+const CAT_LABELS = { spam: 'Spam / Auto', newsletter: 'Newsletter', regular: 'Regular' };
+
+// ══════════════════════════════════════════════════════════════════════
+//  RENDER — header
+// ══════════════════════════════════════════════════════════════════════
+function refreshHeader() {
+  const accounts = Store.getAccounts();
+  const sel = document.getElementById('acct-select');
+  sel.innerHTML = '<option value="">— Select account —</option>' +
+    accounts.map(a => `<option value="${esc(a)}" ${a === UI.currentAcct ? 'selected' : ''}>${esc(a)}</option>`).join('');
+
+  const hasCid = !!Store.getClientId();
+  const hasAcct = !!UI.currentAcct;
+  document.getElementById('add-acct-btn').style.display   = hasCid ? '' : 'none';
+  document.getElementById('settings-btn').style.display   = hasCid ? '' : 'none';
+  document.getElementById('scan-btn').style.display       = (hasAcct && !UI.scanning) ? '' : 'none';
+  document.getElementById('theme-btn').textContent        = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  RENDER — main
+// ══════════════════════════════════════════════════════════════════════
+function render() {
+  refreshHeader();
+  const el = document.getElementById('main-content');
+
+  if (!Store.getClientId()) { el.innerHTML = renderSetup(); return; }
+
+  const accounts = Store.getAccounts();
+  if (!accounts.length) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📬</div>
+        <h2>No Gmail accounts connected</h2>
+        <p>Add an account to start cleaning your inbox.</p>
+        <button class="btn btn-primary" onclick="App.addAccount()">+ Add Gmail Account</button>
+      </div>`;
     return;
   }
 
-  list.forEach(function(s) {
-    var row = document.createElement("div");
-    row.className = "sender-row";
+  if (!UI.currentAcct) { UI.currentAcct = accounts[0]; refreshHeader(); }
 
-    var cb = document.createElement("input");
-    cb.type = "checkbox"; cb.className = "row-cb";
-    cb.dataset.email = s.email; cb.dataset.count = s.count;
-    cb.style.cssText = "width:18px;height:18px;flex-shrink:0;accent-color:#6366f1";
-    cb.onchange = updateBulk;
-
-    var dot = document.createElement("div");
-    dot.className = "dot " + s.cat;
-
-    var info = document.createElement("div"); info.className = "sinfo";
-    var nm = document.createElement("div"); nm.className = "sname";
-    nm.textContent = s.name !== s.email ? s.name : s.email;
-    var addr = document.createElement("div"); addr.className = "saddr";
-    addr.textContent = s.email;
-    info.appendChild(nm); info.appendChild(addr);
-
-    var cnt = document.createElement("div"); cnt.className = "scnt";
-    cnt.textContent = s.count + " emails";
-
-    var badge = document.createElement("span");
-    badge.className = "badge " + s.cat;
-    badge.textContent = s.cat === "spam" ? "Spam" : s.cat === "newsletter" ? "Newsletter" : "";
-    if (s.cat === "regular") badge.style.display = "none";
-
-    var btn = document.createElement("button");
-    btn.className = "btn btn-danger btn-sm";
-    btn.textContent = "Trash";
-    (function(email, b) {
-      b.onclick = function() { trashOne(email, b); };
-    })(s.email, btn);
-
-    row.appendChild(cb); row.appendChild(dot); row.appendChild(info);
-    row.appendChild(cnt); row.appendChild(badge); row.appendChild(btn);
-    container.appendChild(row);
-  });
-  updateBulk();
-}
-
-function setFilter(f) {
-  filter = f;
-  document.querySelectorAll(".ftab").forEach(function(b) { b.classList.remove("on"); });
-  document.querySelectorAll(".ftab").forEach(function(b) {
-    if (b.textContent === { all:"All", spam:"Spam", newsletter:"Newsletter", regular:"Regular" }[f]) b.classList.add("on");
-  });
-  renderRows();
-}
-
-function updateBulk() {
-  var checked = Array.prototype.slice.call(document.querySelectorAll(".row-cb:checked"));
-  var bar = document.getElementById("bulk-bar");
-  if (!checked.length) { bar.classList.remove("on"); return; }
-  var cnt = checked.reduce(function(a, c) { return a + parseInt(c.dataset.count || 0); }, 0);
-  document.getElementById("bulk-label").textContent = checked.length + " sender" + (checked.length !== 1 ? "s" : "") + " selected";
-  document.getElementById("bulk-sub").textContent = "~" + cnt + " emails will be trashed";
-  bar.classList.add("on");
-}
-
-function selectAll() {
-  document.querySelectorAll(".row-cb").forEach(function(c) { c.checked = true; });
-  updateBulk();
-}
-
-function clearSel() {
-  document.querySelectorAll(".row-cb:checked").forEach(function(c) { c.checked = false; });
-  updateBulk();
-}
-
-function trashOne(email, btn) {
-  var tok = getToken();
-  if (!tok) { msg("Session expired — scan again", "err"); return; }
-  if (!confirm("Trash all emails from " + email + "?")) return;
-  btn.disabled = true; btn.textContent = "...";
-  doTrash(tok, email).then(function(n) {
-    toast("Trashed " + n + " emails from " + email);
-    senders = senders.filter(function(s) { return s.email !== email; });
-    renderAll();
-  }).catch(function(e) { toast("Error: " + e.message); btn.disabled = false; btn.textContent = "Trash"; });
-}
-
-function trashSelected() {
-  var checked = Array.prototype.slice.call(document.querySelectorAll(".row-cb:checked"));
-  if (!checked.length) return;
-  var tok = getToken();
-  if (!tok) { msg("Session expired — scan again", "err"); return; }
-  if (!confirm("Trash emails from " + checked.length + " sender(s)?")) return;
-  clearSel();
-  var emails = checked.map(function(c) { return c.dataset.email; });
-  var total = 0, p = Promise.resolve();
-  emails.forEach(function(email) {
-    p = p.then(function() {
-      return doTrash(tok, email)
-        .then(function(n) { total += n; senders = senders.filter(function(s) { return s.email !== email; }); })
-        .catch(function() {});
-    });
-  });
-  p.then(function() { toast("Trashed " + total + " emails"); renderAll(); });
-}
-
-function doTrash(tok, email) {
-  var deleted = 0;
-  function loop(pt) {
-    var url = API + "/users/me/threads?q=" + encodeURIComponent("from:" + email + " in:inbox")
-      + "&maxResults=100&fields=nextPageToken,threads/id";
-    if (pt) url += "&pageToken=" + pt;
-    return fetch(url, { headers: { Authorization: "Bearer " + tok } })
-      .then(function(r) { return r.json(); })
-      .then(function(d) {
-        var threads = d.threads || [];
-        if (!threads.length) return deleted;
-        return Promise.all(threads.map(function(t) {
-          return fetch(API + "/users/me/threads/" + t.id + "/trash",
-            { method: "POST", headers: { Authorization: "Bearer " + tok } });
-        })).then(function() {
-          deleted += threads.length;
-          if (d.nextPageToken) return loop(d.nextPageToken);
-          return deleted;
-        });
-      });
+  const senders = UI.senders[UI.currentAcct];
+  if (!senders) {
+    const saved = Store.loadScan(UI.currentAcct);
+    if (saved) {
+      UI.senders[UI.currentAcct] = annotateSenders(saved.senders);
+      UI.scanTs[UI.currentAcct]  = saved.ts;
+      render();
+      return;
+    }
+    el.innerHTML = `
+      <div class="scan-prompt">
+        <h2>Ready to scan</h2>
+        <p>We'll fetch your inbox, group emails by sender, and detect newsletters and bulk mail.</p>
+        <button class="btn btn-primary" onclick="App.scan()">Scan Inbox</button>
+        <div style="margin-top:12px;font-size:.8rem;color:var(--muted)">Scans up to ${Store.getScanSize()} threads</div>
+      </div>`;
+    return;
   }
-  return loop();
+
+  const stats = computeStats(senders);
+  const settingsHtml = UI.showSettings ? renderSettings() : '';
+  el.innerHTML = settingsHtml + renderStats(stats) + renderQuickActions(stats) + renderCharts(senders, stats) + renderTable(senders, stats);
+  attachTableHandlers();
+  drawCharts(senders, stats);
+  animateCounters();
 }
 
-checkRedirect();
-loadAccounts();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(function() {});
+// ── Settings panel ────────────────────────────────────────────────────
+function renderSettings() {
+  const scanSize = Store.getScanSize();
+  const archive  = Store.getArchiveMode();
+  const acct     = UI.currentAcct;
+  return `
+    <div class="settings-card">
+      <h3>Settings</h3>
+      <div class="setting-row">
+        <div class="setting-label"><strong>Scan size</strong><small>How many inbox threads to analyse</small></div>
+        <select class="sort-select" onchange="App.setScanSize(this.value)">
+          ${[200,500,1000,2000].map(n => `<option value="${n}" ${scanSize===n?'selected':''}>${n} threads</option>`).join('')}
+        </select>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label"><strong>Archive instead of Trash</strong><small>Remove from inbox but keep emails in All Mail</small></div>
+        <label class="toggle"><input type="checkbox" ${archive?'checked':''} onchange="App.setArchiveMode(this.checked)"><span class="toggle-track"></span></label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label"><strong>Account</strong><small>${esc(acct)}</small></div>
+        <button class="btn btn-secondary btn-sm" onclick="App.removeAccount('${esc(acct)}')">Sign out</button>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label"><strong>Export sender list</strong><small>Download as CSV</small></div>
+        <button class="btn btn-secondary btn-sm" onclick="App.exportCSV()">Export CSV</button>
+      </div>
+    </div>`;
+}
+
+// ── Stats cards ──────────────────────────────────────────────────────
+function renderStats(stats) {
+  const ts = UI.scanTs[UI.currentAcct];
+  const scanAge = ts ? `Last scanned ${timeAgo(ts)}` : '';
+  const cards = [
+    { label:'Total Emails',   value:fmt(stats.total),   sub: scanAge || 'in your inbox',   cls:'accent',  icon:'📧', filter:'all' },
+    { label:'Unique Senders', value:fmt(stats.senders), sub:`${stats.senders} contacts`,   cls:'',        icon:'👥', filter:'all' },
+    { label:'Spam / Bulk',    value:fmt(stats.bycat.spam.senders + stats.bycat.newsletter.senders),
+      sub:`${fmt(stats.bycat.spam.emails + stats.bycat.newsletter.emails)} emails detected`, cls:'danger', icon:'🚨', filter:'spam' },
+    { label:'Cleanable',      value:fmt(stats.cleanable), sub:'emails you can remove',     cls:'warning', icon:'🧹', filter:'newsletter' },
+  ];
+  return `<div class="stats-grid">${cards.map(c => `
+    <div class="stat-card ${c.cls} clickable" onclick="App.quickFilter('${c.filter}')">
+      <div class="stat-icon">${c.icon}</div>
+      <div class="stat-label">${c.label}</div>
+      <div class="stat-value" data-target="${c.value}">${c.value}</div>
+      <div class="stat-sub">${c.sub}</div>
+    </div>`).join('')}</div>`;
+}
+
+// ── Quick action buttons ─────────────────────────────────────────────
+function renderQuickActions(stats) {
+  const archiveMode = Store.getArchiveMode();
+  const verb = archiveMode ? 'Archive' : 'Trash';
+  const spamCount  = stats.bycat.spam.senders + stats.bycat.newsletter.senders;
+  return `
+    <div class="quick-actions">
+      <button class="btn btn-danger btn-sm" onclick="App.trashCategory('spam')" ${!stats.bycat.spam.senders?'disabled':''}>
+        🗑 ${verb} All Spam (${stats.bycat.spam.senders})
+      </button>
+      <button class="btn btn-secondary btn-sm" style="border-color:var(--amber);color:var(--amber)" onclick="App.trashCategory('newsletter')" ${!stats.bycat.newsletter.senders?'disabled':''}>
+        📧 ${verb} All Newsletters (${stats.bycat.newsletter.senders})
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="App.selectCategory('spam','newsletter')">
+        ☑ Select All Junk (${spamCount})
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="App.scan()">↺ Rescan</button>
+    </div>`;
+}
+
+// ── Charts ───────────────────────────────────────────────────────────
+function renderCharts(senders, stats) {
+  return `
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Top Senders</div>
+        <div class="chart-wrap" style="height:${Math.min(senders.slice(0,10).length*34+40,380)}px">
+          <canvas id="chart-main"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Inbox Breakdown</div>
+        <div style="display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+          <div style="width:160px;height:160px;position:relative"><canvas id="chart-donut"></canvas></div>
+        </div>
+        <div class="breakdown-list">
+          ${['spam','newsletter','regular'].map(cat => {
+            const d = stats.bycat[cat];
+            const pct = stats.total > 0 ? Math.round(d.emails/stats.total*100) : 0;
+            return `
+              <div class="breakdown-item">
+                <div class="bk-dot" style="background:${CAT_COLORS[cat]}"></div>
+                <div style="flex:1">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                    <span class="bk-label">${CAT_LABELS[cat]}</span>
+                    <span class="bk-count">${fmt(d.emails)}</span>
+                  </div>
+                  <div class="bk-bar-wrap"><div class="bk-bar" style="background:${CAT_COLORS[cat]};width:0%" data-pct="${pct}"></div></div>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Table ────────────────────────────────────────────────────────────
+function renderTable(senders, stats) {
+  const counts = { all: senders.length, spam: stats.bycat.spam.senders, newsletter: stats.bycat.newsletter.senders, regular: stats.bycat.regular.senders };
+  const tabs = ['all','spam','newsletter','regular'].map(f => `
+    <button class="filter-tab ${UI.filter===f?'active':''}" onclick="App.setFilter('${f}')">
+      ${f==='all'?'All':CAT_LABELS[f]}<span class="tab-count">${counts[f]}</span>
+    </button>`).join('');
+
+  const visible  = getVisibleSenders(senders);
+  const maxCount = senders[0]?.count || 1;
+
+  const rows = visible.length === 0
+    ? `<div class="no-results">No senders match your filter.</div>`
+    : visible.map(s => {
+        const barPct = Math.round(s.count/maxCount*100);
+        const wl = s.whitelisted;
+        return `
+          <div class="sender-row ${wl?'whitelisted-row':''}" id="row-${safeId(s.email)}" data-email="${esc(s.email)}" data-cat="${s.cat}">
+            <input type="checkbox" class="row-cb" data-email="${esc(s.email)}" ${wl?'disabled title="Whitelisted"':''}>
+            <div class="risk-dot ${wl?'whitelisted':s.cat}"></div>
+            <div class="sender-info" onclick="App.openPreview('${esc(s.email)}')">
+              <div class="sender-name">${esc(s.name!==s.email?s.name:s.email)}</div>
+              <div class="sender-addr">${esc(s.email)}</div>
+            </div>
+            <div class="count-col">
+              <div class="count-bar-wrap"><div class="count-bar" style="background:${wl?'var(--accent)':CAT_COLORS[s.cat]};width:0%" data-pct="${barPct}"></div></div>
+              <div class="count-num">${s.count} email${s.count!==1?'s':''}</div>
+            </div>
+            ${wl
+              ? `<span class="badge whitelisted">Safe</span>`
+              : `<span class="badge ${s.cat}">${s.cat==='spam'?'Auto-sender':'Newsletter'}</span>`}
+            <div class="row-action">
+              ${wl
+                ? `<button class="btn btn-ghost btn-sm" onclick="App.removeWhitelist('${esc(s.email)}')">Unprotect</button>`
+                : `<button class="btn btn-ghost btn-sm" onclick="App.addWhitelist('${esc(s.email)}')">Protect</button>
+                   <button class="btn btn-danger btn-sm trash-btn" data-email="${esc(s.email)}">${Store.getArchiveMode()?'Archive':'Trash'}</button>`}
+            </div>
+          </div>`;
+      }).join('');
+
+  return `
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div class="filter-tabs">${tabs}</div>
+        <div class="search-wrap">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M12.9 14.32a8 8 0 1 1 1.41-1.41l4.38 4.37-1.42 1.42-4.37-4.38zM8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12z"/></svg>
+          <input class="search-input" id="search-input" placeholder="Search senders…" value="${esc(UI.search)}" oninput="App.setSearch(this.value)">
+        </div>
+        <select class="sort-select" onchange="App.setSort(this.value)">
+          <option value="count" ${UI.sort==='count'?'selected':''}>Sort: Volume</option>
+          <option value="name"  ${UI.sort==='name' ?'selected':''}>Sort: Name</option>
+          <option value="alpha" ${UI.sort==='alpha'?'selected':''}>Sort: A–Z</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="App.selectAllVisible()">Select all</button>
+      </div>
+      <div id="sender-rows">${rows}</div>
+    </div>`;
+}
+
+function getVisibleSenders(senders) {
+  let list = senders;
+  if (UI.filter !== 'all') list = list.filter(s => s.cat === UI.filter);
+  if (UI.search) {
+    const q = UI.search.toLowerCase();
+    list = list.filter(s => s.email.toLowerCase().includes(q) || (s.name||'').toLowerCase().includes(q));
+  }
+  if (UI.sort === 'name' || UI.sort === 'alpha') list = [...list].sort((a,b) => (a.name||a.email).localeCompare(b.name||b.email));
+  return list;
+}
+
+function attachTableHandlers() {
+  document.querySelectorAll('.trash-btn').forEach(btn => {
+    btn.addEventListener('click', () => App.trashOne(btn.dataset.email, btn));
+  });
+  document.querySelectorAll('.row-cb').forEach(cb => {
+    cb.addEventListener('change', updateBulkBar);
+  });
+}
+
+// ── Charts ───────────────────────────────────────────────────────────
+function drawCharts(senders, stats) {
+  const top10 = senders.slice(0, 10);
+  if (UI.chart) { UI.chart.destroy(); UI.chart = null; }
+  if (UI.donut) { UI.donut.destroy(); UI.donut = null; }
+
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  Chart.defaults.color       = isDark ? '#94a3b8' : '#64748b';
+  Chart.defaults.borderColor = isDark ? '#334155' : '#e2e8f0';
+
+  const barCtx = document.getElementById('chart-main')?.getContext('2d');
+  if (barCtx) {
+    UI.chart = new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: top10.map(s => s.name!==s.email&&s.name ? s.name : s.email.split('@')[0]),
+        datasets: [{ data: top10.map(s=>s.count), backgroundColor: top10.map(s=>CAT_COLORS[s.cat]), borderRadius:4, borderSkipped:false }],
+      },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.raw} emails · ${CAT_LABELS[top10[ctx.dataIndex].cat]}` } },
+        },
+        scales: {
+          x: { beginAtZero: true, grid: { display: false } },
+          y: { grid: { display: false }, ticks: { font: { weight: '600' } } },
+        },
+        onClick: (_, els) => {
+          if (els.length) { const s = top10[els[0].index]; UI.search = s.email; UI.filter = 'all'; render(); }
+        },
+      },
+    });
+  }
+
+  const donutCtx = document.getElementById('chart-donut')?.getContext('2d');
+  if (donutCtx) {
+    const d = stats.bycat;
+    UI.donut = new Chart(donutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Spam / Bulk','Newsletter','Regular'],
+        datasets: [{ data: [d.spam.emails,d.newsletter.emails,d.regular.emails], backgroundColor: [CAT_COLORS.spam,CAT_COLORS.newsletter,CAT_COLORS.regular], borderWidth:0, hoverOffset:6 }],
+      },
+      options: { responsive:false, cutout:'68%', plugins: { legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.raw)} emails`}} } },
+    });
+  }
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.bk-bar[data-pct]').forEach(el => setTimeout(()=>{ el.style.width = el.dataset.pct+'%'; },100));
+    document.querySelectorAll('.count-bar[data-pct]').forEach(el => setTimeout(()=>{ el.style.width = el.dataset.pct+'%'; },50));
+  });
+}
+
+function animateCounters() {
+  document.querySelectorAll('.stat-value[data-target]').forEach(el => {
+    const raw = el.dataset.target;
+    const num = parseFloat(raw);
+    if (isNaN(num) || raw.includes('k')) return;
+    let frame = 0, frames = 30;
+    const step = () => { frame++; el.textContent = Math.round(num * (frame/frames)); if (frame < frames) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+
+// ── Setup ─────────────────────────────────────────────────────────────
+function renderSetup() {
+  return `
+    <div class="setup-card">
+      <div class="setup-hero">
+        <div class="icon">✉️</div>
+        <h1>Gmail Inbox Cleaner</h1>
+        <p>Connect your Gmail and bulk-delete spam, newsletters and clutter.</p>
+      </div>
+      <div class="setup-body">
+        <div class="setup-step"><div class="step-num">1</div><div class="step-body">
+          Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> → create a project → enable <strong>Gmail API</strong>
+        </div></div>
+        <div class="setup-step"><div class="step-num">2</div><div class="step-body">
+          <strong>APIs &amp; Services → Credentials → Create OAuth 2.0 Client ID</strong><br>
+          Type: <em>Web application</em> · Add your site URL to both <em>Authorised JavaScript origins</em> AND <em>Authorised redirect URIs</em>
+        </div></div>
+        <div class="setup-step"><div class="step-num">3</div><div class="step-body">
+          Copy your <strong>Client ID</strong> — looks like <code>123….apps.googleusercontent.com</code>
+        </div></div>
+        <div class="cid-row">
+          <input id="cid-input" class="cid-input" type="text" placeholder="Paste Client ID here…" value="${esc(Store.getClientId())}">
+          <button class="btn btn-primary" onclick="App.saveClientId()">Save &amp; Continue</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  BULK BAR
+// ══════════════════════════════════════════════════════════════════════
+function updateBulkBar() {
+  const checked = [...document.querySelectorAll('.row-cb:checked')];
+  const bar = document.getElementById('bulk-bar');
+  if (!checked.length) { bar.classList.remove('visible'); return; }
+  const totalEmails = checked.reduce((sum, cb) => {
+    const s = (UI.senders[UI.currentAcct]||[]).find(x=>x.email===cb.dataset.email);
+    return sum + (s?.count || 0);
+  }, 0);
+  document.getElementById('bulk-label').textContent = `${checked.length} sender${checked.length!==1?'s':''} selected`;
+  document.getElementById('bulk-sub').textContent   = `~${totalEmails} emails`;
+  bar.classList.add('visible');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  EMAIL PREVIEW MODAL
+// ══════════════════════════════════════════════════════════════════════
+function openPreviewModal(email) {
+  const senders  = UI.senders[UI.currentAcct] || [];
+  const sender   = senders.find(s => s.email === email);
+  document.getElementById('preview-title').textContent = sender?.name || email;
+  document.getElementById('preview-addr').textContent  = email;
+  document.getElementById('preview-modal').classList.add('open');
+  document.getElementById('preview-body').innerHTML = '<div class="spinner" style="margin:24px auto;display:block"></div>';
+  document.getElementById('preview-actions').innerHTML = '';
+
+  const actHtml = `
+    <button class="btn btn-danger btn-sm" onclick="App.trashOne('${esc(email)}',null);App.closePreview()">
+      ${Store.getArchiveMode()?'Archive':'Trash'} all from this sender
+    </button>
+    <button class="btn btn-secondary btn-sm" onclick="App.markOneRead('${esc(email)}');App.closePreview()">
+      Mark all as read
+    </button>
+    ${sender?.whitelisted
+      ? `<button class="btn btn-ghost btn-sm" onclick="App.removeWhitelist('${esc(email)}');App.closePreview()">Remove from Safe list</button>`
+      : `<button class="btn btn-success btn-sm" onclick="App.addWhitelist('${esc(email)}');App.closePreview()">Add to Safe list</button>`}`;
+  document.getElementById('preview-actions').innerHTML = actHtml;
+
+  if (sender?.threads?.length) {
+    const html = `<div class="subject-list">` +
+      sender.threads.map(t => `
+        <div class="subject-item">
+          <div class="subj-text">${esc(t.subject)}</div>
+          ${t.date ? `<div class="subj-date">${esc(t.date.slice(0,25))}</div>` : ''}
+        </div>`).join('') +
+      `</div>`;
+    document.getElementById('preview-body').innerHTML = html;
+  } else {
+    document.getElementById('preview-body').innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px">No preview available — rescan to fetch subjects.</p>';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  APP ACTIONS
+// ══════════════════════════════════════════════════════════════════════
+const App = {
+  saveClientId() {
+    const v = document.getElementById('cid-input')?.value.trim();
+    if (!v) { toast('Paste your Client ID first'); return; }
+    Store.setClientId(v);
+    render();
+  },
+
+  toggleTheme() {
+    const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = t;
+    Store.setTheme(t);
+    document.getElementById('theme-meta').content = t === 'dark' ? '#1e293b' : '#6366f1';
+    refreshHeader();
+    const s = UI.senders[UI.currentAcct];
+    if (s) { const stats = computeStats(s); drawCharts(s, stats); }
+  },
+
+  toggleSettings() { UI.showSettings = !UI.showSettings; render(); },
+  setScanSize(v)    { Store.setScanSize(parseInt(v)); toast(`Scan size set to ${v}`); },
+  setArchiveMode(v) { Store.setArchiveMode(v); toast(v ? 'Archive mode on' : 'Trash mode on'); render(); },
+
+  addAccount() { startOAuth(); },
+
+  removeAccount(email) {
+    if (!confirm(`Sign out of ${email}?`)) return;
+    Store.removeAccount(email);
+    delete UI.senders[email];
+    if (UI.currentAcct === email) {
+      const accounts = Store.getAccounts();
+      UI.currentAcct = accounts[0] || null;
+    }
+    render();
+    toast(`Signed out of ${email}`);
+  },
+
+  switchAccount(email) {
+    if (!email) return;
+    UI.currentAcct = email;
+    UI.filter = 'all'; UI.search = ''; UI.sort = 'count';
+    render();
+  },
+
+  async scan() {
+    const acct = UI.currentAcct;
+    if (!acct) { toast('Select an account first'); return; }
+
+    let token = Tokens.get(acct);
+    if (!token) {
+      toast('Re-authenticating… you will be redirected to Google');
+      setTimeout(() => startOAuth(acct), 1500);
+      return;
+    }
+
+    UI.scanning = true;
+    const prog = document.getElementById('scan-progress');
+    const bar  = document.getElementById('scan-bar');
+    const txt  = document.getElementById('scan-text');
+    prog.classList.add('visible');
+    document.getElementById('scan-btn').style.display = 'none';
+
+    try {
+      const senders = await getSenders(token, Store.getScanSize(), (done, total) => {
+        const pct = Math.round(done/total*100);
+        bar.style.width = pct + '%';
+        txt.textContent = `Scanning ${done} / ${total}…`;
+      });
+      UI.senders[acct] = annotateSenders(senders);
+      UI.scanTs[acct]  = Date.now();
+      Store.saveScan(acct, senders);
+      UI.filter = 'all'; UI.search = ''; UI.sort = 'count';
+      render();
+      toast(`Found ${senders.length} senders across ${senders.reduce((a,s)=>a+s.count,0)} emails`);
+    } catch(e) {
+      if (e.code === 401 || e.code === 403) {
+        Tokens.clear(acct);
+        toast(e.message);
+      } else { toast('Scan failed: ' + e.message); }
+    } finally {
+      UI.scanning = false;
+      prog.classList.remove('visible');
+      bar.style.width = '0%';
+      refreshHeader();
+    }
+  },
+
+  setFilter(f) { UI.filter = f; render(); },
+  setSearch(v) { UI.search = v; render(); },
+  setSort(v)   { UI.sort   = v; render(); },
+
+  quickFilter(f) {
+    UI.filter = f; UI.search = ''; render();
+    setTimeout(() => document.getElementById('sender-rows')?.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+  },
+
+  selectAllVisible() {
+    const senders = UI.senders[UI.currentAcct] || [];
+    const visible = getVisibleSenders(senders).map(s => s.email);
+    document.querySelectorAll('.row-cb:not(:disabled)').forEach(cb => { cb.checked = visible.includes(cb.dataset.email); });
+    updateBulkBar();
+  },
+
+  selectCategory(...cats) {
+    const senders = UI.senders[UI.currentAcct] || [];
+    const emails = senders.filter(s => cats.includes(s.cat) && !s.whitelisted).map(s => s.email);
+    document.querySelectorAll('.row-cb:not(:disabled)').forEach(cb => { cb.checked = emails.includes(cb.dataset.email); });
+    updateBulkBar();
+  },
+
+  clearSelection() {
+    document.querySelectorAll('.row-cb:checked').forEach(cb => cb.checked = false);
+    updateBulkBar();
+  },
+
+  async trashOne(email, btn) {
+    const token = Tokens.get(UI.currentAcct);
+    if (!token) { toast('Session expired — tap Scan to re-authenticate'); return; }
+    const verb = Store.getArchiveMode() ? 'Archive' : 'Trash';
+    if (!confirm(`${verb} all emails from\n${email}?`)) return;
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    try {
+      const { deleted, trashed } = await trashThreadsFrom(token, email);
+      const sender = (UI.senders[UI.currentAcct]||[]).find(s=>s.email===email);
+      toast(`${verb}d ${deleted} email${deleted!==1?'s':''} from ${email}`);
+      showUndo(`${verb}d ${deleted} emails from ${email}`, trashed, [sender]);
+      _removeSender(email);
+      const row = document.getElementById(`row-${safeId(email)}`);
+      if (row) { row.classList.add('fading'); setTimeout(()=>row.remove(), 400); }
+      _refreshStats();
+    } catch(e) {
+      toast('Error: ' + e.message);
+      if (btn) { btn.disabled = false; btn.textContent = verb; }
+    }
+  },
+
+  async trashSelected() {
+    const checked = [...document.querySelectorAll('.row-cb:checked')];
+    if (!checked.length) return;
+    const token = Tokens.get(UI.currentAcct);
+    if (!token) { toast('Session expired — tap Scan to re-authenticate'); return; }
+    const verb = Store.getArchiveMode() ? 'Archive' : 'Trash';
+    if (!confirm(`${verb} emails from ${checked.length} sender(s)?`)) return;
+    App.clearSelection();
+
+    let total = 0;
+    const allTrashed = [], trashSenders = [];
+    for (const cb of checked) {
+      try {
+        const { deleted, trashed } = await trashThreadsFrom(token, cb.dataset.email);
+        total += deleted;
+        allTrashed.push(...trashed);
+        const s = (UI.senders[UI.currentAcct]||[]).find(x=>x.email===cb.dataset.email);
+        if (s) trashSenders.push(s);
+        _removeSender(cb.dataset.email);
+        const row = document.getElementById(`row-${safeId(cb.dataset.email)}`);
+        if (row) { row.classList.add('fading'); setTimeout(()=>row.remove(), 400); }
+      } catch(e) { toast('Error: ' + e.message); }
+    }
+
+    toast(`${verb}d ${total} emails across ${checked.length} sender${checked.length!==1?'s':''}`);
+    showUndo(`${verb}d ${total} emails from ${checked.length} senders`, allTrashed, trashSenders);
+    setTimeout(() => _refreshStats(), 600);
+  },
+
+  async trashCategory(cat) {
+    const senders = (UI.senders[UI.currentAcct]||[]).filter(s=>s.cat===cat&&!s.whitelisted);
+    if (!senders.length) return;
+    const token = Tokens.get(UI.currentAcct);
+    if (!token) { toast('Session expired — tap Scan to re-authenticate'); return; }
+    const verb = Store.getArchiveMode() ? 'Archive' : 'Trash';
+    if (!confirm(`${verb} all emails from ${senders.length} ${CAT_LABELS[cat]} sender(s)?`)) return;
+
+    toast(`${verb}ing…`);
+    let total = 0;
+    const allTrashed = [];
+    for (const s of senders) {
+      try {
+        const { deleted, trashed } = await trashThreadsFrom(token, s.email);
+        total += deleted;
+        allTrashed.push(...trashed);
+        _removeSender(s.email);
+        const row = document.getElementById(`row-${safeId(s.email)}`);
+        if (row) { row.classList.add('fading'); setTimeout(()=>row.remove(), 400); }
+      } catch(e) { console.warn(e); }
+    }
+    toast(`${verb}d ${total} emails from ${senders.length} senders`);
+    showUndo(`${verb}d ${total} emails`, allTrashed, senders);
+    setTimeout(() => _refreshStats(), 600);
+  },
+
+  async markOneRead(email) {
+    const token = Tokens.get(UI.currentAcct);
+    if (!token) { toast('Session expired'); return; }
+    try {
+      const n = await markReadFrom(token, email);
+      toast(`Marked ${n} emails as read`);
+    } catch(e) { toast('Error: ' + e.message); }
+  },
+
+  async markSelectedRead() {
+    const checked = [...document.querySelectorAll('.row-cb:checked')];
+    if (!checked.length) return;
+    const token = Tokens.get(UI.currentAcct);
+    if (!token) { toast('Session expired'); return; }
+    let total = 0;
+    for (const cb of checked) {
+      try { total += await markReadFrom(token, cb.dataset.email); } catch(_) {}
+    }
+    toast(`Marked ${total} emails as read`);
+    App.clearSelection();
+  },
+
+  async undoTrash() {
+    const ids = UI.lastTrashedIds;
+    if (!ids.length) return;
+    const token = Tokens.get(UI.currentAcct);
+    if (!token) { toast('Session expired'); return; }
+    try {
+      await untrashThreads(token, ids);
+      // Restore senders to state
+      const senders = UI.senders[UI.currentAcct] || [];
+      UI.lastTrashedSenders.forEach(s => {
+        if (!senders.find(x=>x.email===s.email)) senders.push(s);
+      });
+      UI.senders[UI.currentAcct] = senders.sort((a,b)=>b.count-a.count);
+      hideUndo();
+      toast(`Restored ${ids.length} email thread${ids.length!==1?'s':''}!`);
+      render();
+    } catch(e) { toast('Undo failed: ' + e.message); }
+  },
+
+  addWhitelist(email) {
+    Store.addWhitelist(email);
+    const senders = UI.senders[UI.currentAcct];
+    if (senders) {
+      const s = senders.find(x=>x.email===email);
+      if (s) { s.whitelisted = true; s.cat = 'regular'; }
+    }
+    toast(`${email} added to Safe list`);
+    render();
+  },
+
+  removeWhitelist(email) {
+    Store.removeWhitelist(email);
+    const senders = UI.senders[UI.currentAcct];
+    if (senders) {
+      const s = senders.find(x=>x.email===email);
+      if (s) { s.whitelisted = false; s.cat = classify(s); }
+    }
+    toast(`${email} removed from Safe list`);
+    render();
+  },
+
+  exportCSV() {
+    const senders = UI.senders[UI.currentAcct] || [];
+    const rows = [['Name','Email','Count','Category'], ...senders.map(s=>[s.name, s.email, s.count, s.cat])];
+    const csv  = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type:'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `inbox-${UI.currentAcct}-${Date.now()}.csv`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    toast('CSV downloaded!');
+  },
+
+  openPreview(email) { openPreviewModal(email); },
+  closePreview()     { document.getElementById('preview-modal').classList.remove('open'); },
+};
+
+function _removeSender(email) {
+  if (UI.senders[UI.currentAcct]) {
+    UI.senders[UI.currentAcct] = UI.senders[UI.currentAcct].filter(s=>s.email!==email);
+    Store.saveScan(UI.currentAcct, UI.senders[UI.currentAcct]);
+  }
+}
+
+function _refreshStats() {
+  const s = UI.senders[UI.currentAcct];
+  if (!s) return;
+  const stats = computeStats(s);
+  const grid  = document.querySelector('.stats-grid');
+  const qa    = document.querySelector('.quick-actions');
+  if (grid) grid.outerHTML = renderStats(stats);
+  if (qa)   qa.outerHTML  = renderQuickActions(stats);
+  animateCounters();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════════════
+checkRedirect().then(() => render());
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
