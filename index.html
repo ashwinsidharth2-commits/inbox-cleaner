@@ -2,16 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Inbox Cleaner">
 <link rel="manifest" href="./manifest.json">
 <title>Gmail Inbox Cleaner</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;color:#0f172a;min-height:100vh}
 header{background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;color:#fff}
+.logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#3b82f6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;flex-shrink:0}
 .logo-title{font-size:1rem;font-weight:700}
 .logo-title span{color:#6366f1}
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:600;min-height:38px}
@@ -22,14 +21,15 @@ header{background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;display
 main{padding:20px}
 .wrap{max-width:600px;margin:0 auto}
 .card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:16px}
-.acct-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.scan-center{text-align:center;padding:40px 24px}
-.scan-center h2{margin-bottom:8px;font-size:1.1rem}
-.scan-center p{color:#64748b;margin-bottom:24px;font-size:.9rem}
-.msg{border-radius:8px;padding:12px 16px;font-size:.85rem;margin-bottom:16px}
-.msg.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
-.msg.err{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-.msg.ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.row-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.acct-sel{flex:1;max-width:220px;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;font-size:.85rem;color:#0f172a}
+.center{text-align:center;padding:40px 24px}
+.center h2{margin-bottom:8px}
+.center p{color:#64748b;margin-bottom:24px;font-size:.9rem}
+.msg{border-radius:8px;padding:12px 16px;font-size:.85rem;margin-bottom:16px;display:none}
+.msg.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;display:block}
+.msg.err{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;display:block}
+.msg.ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;display:block}
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
 .stat{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .stat-icon{font-size:1.2rem;margin-bottom:4px}
@@ -39,33 +39,31 @@ main{padding:20px}
 .stat.danger .stat-value{color:#ef4444}
 .stat.warning .stat-value{color:#f59e0b}
 .stat.accent .stat-value{color:#6366f1}
-.table-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:80px}
+.table-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:80px}
 .toolbar{padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .ftabs{display:flex;gap:4px;flex-wrap:wrap}
 .ftab{padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:600;border:1px solid #e2e8f0;background:transparent;color:#64748b;cursor:pointer}
 .ftab.on{background:#6366f1;color:#fff;border-color:#6366f1}
-.row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid #e2e8f0}
-.row:last-child{border-bottom:none}
-.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sender-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid #e2e8f0}
+.sender-row:last-child{border-bottom:none}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:#10b981}
 .dot.spam{background:#ef4444}
 .dot.newsletter{background:#f59e0b}
-.dot.regular{background:#10b981}
 .sinfo{flex:1;min-width:0}
 .sname{font-weight:600;font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .saddr{font-size:.72rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.scnt{font-size:.75rem;color:#64748b;font-weight:600;flex-shrink:0;white-space:nowrap}
+.scnt{font-size:.75rem;color:#64748b;font-weight:600;flex-shrink:0}
 .badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:.7rem;font-weight:700;flex-shrink:0}
 .badge.spam{background:#fef2f2;color:#ef4444}
 .badge.newsletter{background:#fffbeb;color:#f59e0b}
-.badge.regular{display:none}
 #bulk-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:#0f172a;color:#fff;padding:12px 20px;border-radius:40px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:200;transition:transform .3s;font-size:.875rem}
 #bulk-bar.on{transform:translateX(-50%) translateY(0)}
 #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#f1f5f9;padding:10px 20px;border-radius:20px;font-size:.875rem;z-index:300;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
-@keyframes spin{to{transform:rotate(360deg)}}
 .prog-wrap{background:#e2e8f0;border-radius:4px;height:6px;margin:10px 0;overflow:hidden}
 .prog-bar{height:100%;background:#6366f1;border-radius:4px;transition:width .3s;width:0}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #e2e8f0;border-top-color:#6366f1;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
 .hidden{display:none!important}
 </style>
 </head>
@@ -76,29 +74,29 @@ main{padding:20px}
 </header>
 <main><div class="wrap">
 
-<div id="msg-area"></div>
+<div id="msg" class="msg"></div>
 
 <div class="card">
-  <div class="acct-row">
-    <select id="acct-select" style="flex:1;max-width:220px;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;font-size:.85rem;color:#0f172a" onchange="switchAccount(this.value)">
+  <div class="row-bar">
+    <select id="acct-sel" class="acct-sel" onchange="switchAccount(this.value)">
       <option value="">Select account...</option>
     </select>
     <button class="btn btn-primary btn-sm" onclick="addAccount()">+ Add Account</button>
   </div>
 </div>
 
-<div id="section-scan" class="card scan-center hidden">
+<div id="sec-scan" class="card center hidden">
   <h2>Ready to scan</h2>
-  <p>Fetch your inbox, group by sender, find what to delete</p>
+  <p>Scan your inbox to group emails by sender</p>
   <button class="btn btn-primary" onclick="startScan()">Scan My Inbox</button>
 </div>
 
-<div id="section-scanning" class="card scan-center hidden">
-  <p><span class="spinner" style="border-color:rgba(99,102,241,.2);border-top-color:#6366f1"></span><span id="scan-status">Scanning...</span></p>
+<div id="sec-scanning" class="card center hidden">
+  <p><span class="spin"></span><span id="scan-status">Scanning...</span></p>
   <div class="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
 </div>
 
-<div id="section-results" class="hidden">
+<div id="sec-results" class="hidden">
   <div class="stats-grid" id="stats-grid"></div>
   <div class="table-card">
     <div class="toolbar">
@@ -116,172 +114,184 @@ main{padding:20px}
     <div id="bulk-label" style="font-weight:700"></div>
     <div id="bulk-sub" style="opacity:.6;font-size:.78rem"></div>
   </div>
-  <button class="btn btn-danger btn-sm" onclick="trashSelected()">&#128465; Trash All</button>
+  <button class="btn btn-danger btn-sm" onclick="trashSelected()">Trash All</button>
   <button class="btn btn-secondary btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:none" onclick="clearSel()">Cancel</button>
 </div>
 <div id="toast"></div>
 
 <script>
-var CLIENT_ID = "318021671742-7ng49bifkl36je3e7tl4bf7i47vpcopc.apps.googleusercontent.com";
-var GMAIL = "https://gmail.googleapis.com/gmail/v1";
-var REDIRECT = window.location.origin + window.location.pathname;
+var CID = "318021671742-7ng49bifkl36je3e7tl4bf7i47vpcopc.apps.googleusercontent.com";
+var API = "https://gmail.googleapis.com/gmail/v1";
+var REDIR = location.origin + location.pathname;
 var SCOPE = "https://www.googleapis.com/auth/gmail.modify";
+
 var tokens = {};
 var senders = [];
-var currentAcct = null;
-var activeFilter = "all";
+var curAcct = null;
+var filter = "all";
 
 function toast(msg) {
   var el = document.getElementById("toast");
-  el.textContent = msg; el.classList.add("on");
+  el.textContent = msg;
+  el.classList.add("on");
   setTimeout(function() { el.classList.remove("on"); }, 3500);
 }
 
-function showMsg(msg, type) {
-  var el = document.getElementById("msg-area");
-  el.innerHTML = '<div class="msg ' + (type||"info") + '">' + msg + '</div>';
-  if (type !== "err") setTimeout(function() { el.innerHTML = ""; }, 5000);
+function msg(text, type) {
+  var el = document.getElementById("msg");
+  el.textContent = text;
+  el.className = "msg " + (type || "info");
+  if (type !== "err") setTimeout(function() { el.className = "msg"; }, 5000);
 }
 
 function show(id) { document.getElementById(id).classList.remove("hidden"); }
 function hide(id) { document.getElementById(id).classList.add("hidden"); }
 
 function addAccount() {
-  var url = "https://accounts.google.com/o/oauth2/v2/auth" +
-    "?client_id=" + encodeURIComponent(CLIENT_ID) +
-    "&redirect_uri=" + encodeURIComponent(REDIRECT) +
-    "&response_type=token" +
-    "&scope=" + encodeURIComponent(SCOPE) +
-    "&prompt=select_account";
-  window.location.href = url;
+  var url = "https://accounts.google.com/o/oauth2/v2/auth"
+    + "?client_id=" + encodeURIComponent(CID)
+    + "&redirect_uri=" + encodeURIComponent(REDIR)
+    + "&response_type=token"
+    + "&scope=" + encodeURIComponent(SCOPE)
+    + "&prompt=select_account";
+  location.href = url;
 }
 
-function checkToken() {
-  var hash = window.location.hash;
-  if (!hash || hash.indexOf("access_token") === -1) return;
-  var params = {};
-  hash.replace(/^#/, "").split("&").forEach(function(p) {
-    var kv = p.split("=");
-    params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || "");
+function checkRedirect() {
+  var h = location.hash;
+  if (!h || h.indexOf("access_token") === -1) return;
+  var p = {};
+  h.replace(/^#/, "").split("&").forEach(function(part) {
+    var kv = part.split("=");
+    p[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || "");
   });
-  if (!params.access_token) return;
-  history.replaceState(null, null, window.location.pathname);
-  var token = params.access_token;
-  var expiry = Date.now() + (parseInt(params.expires_in || "3600") - 60) * 1000;
-  showMsg("Signing in...");
-  fetch(GMAIL + "/users/me/profile", { headers: { Authorization: "Bearer " + token } })
+  if (!p.access_token) return;
+  history.replaceState(null, null, location.pathname);
+  var tok = p.access_token;
+  var exp = Date.now() + (parseInt(p.expires_in || "3600") - 60) * 1000;
+  msg("Getting your account info...");
+  fetch(API + "/users/me/profile", { headers: { Authorization: "Bearer " + tok } })
     .then(function(r) { return r.json(); })
     .then(function(d) {
       var email = d.emailAddress;
-      if (!email) { showMsg("Could not get email — try again", "err"); return; }
-      tokens[email] = { token: token, expiry: expiry };
-      var accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
-      if (accounts.indexOf(email) === -1) { accounts.push(email); localStorage.setItem("accounts", JSON.stringify(accounts)); }
-      currentAcct = email;
-      refreshAccounts();
-      show("section-scan");
-      showMsg("Signed in as " + email, "ok");
+      if (!email) { msg("Could not get email — try again", "err"); return; }
+      tokens[email] = { tok: tok, exp: exp };
+      var list = JSON.parse(localStorage.getItem("accts") || "[]");
+      if (list.indexOf(email) === -1) { list.push(email); localStorage.setItem("accts", JSON.stringify(list)); }
+      curAcct = email;
+      loadAccounts();
+      show("sec-scan");
+      msg("Signed in as " + email, "ok");
     })
-    .catch(function(e) { showMsg("Error: " + e.message, "err"); });
+    .catch(function(e) { msg("Error: " + e.message, "err"); });
 }
 
-function refreshAccounts() {
-  var accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
-  var sel = document.getElementById("acct-select");
-  sel.innerHTML = '<option value="">Select account...</option>';
-  accounts.forEach(function(a) {
-    var opt = document.createElement("option");
-    opt.value = a; opt.textContent = a;
-    if (a === currentAcct) opt.selected = true;
-    sel.appendChild(opt);
+function loadAccounts() {
+  var list = JSON.parse(localStorage.getItem("accts") || "[]");
+  var sel = document.getElementById("acct-sel");
+  sel.innerHTML = "";
+  var def = document.createElement("option");
+  def.value = ""; def.textContent = "Select account...";
+  sel.appendChild(def);
+  list.forEach(function(a) {
+    var o = document.createElement("option");
+    o.value = a; o.textContent = a;
+    if (a === curAcct) o.selected = true;
+    sel.appendChild(o);
   });
-  if (currentAcct) { hide("section-results"); show("section-scan"); }
+  if (curAcct) show("sec-scan");
 }
 
 function switchAccount(email) {
   if (!email) return;
-  currentAcct = email; senders = []; activeFilter = "all";
-  hide("section-results"); hide("section-scanning"); show("section-scan");
+  curAcct = email; senders = []; filter = "all";
+  hide("sec-results"); hide("sec-scanning"); show("sec-scan");
 }
 
 function getToken() {
-  var t = tokens[currentAcct];
-  return (t && Date.now() < t.expiry) ? t.token : null;
+  var t = tokens[curAcct];
+  return (t && Date.now() < t.exp) ? t.tok : null;
 }
 
 function startScan() {
-  var token = getToken();
-  if (!token) {
-    var url = "https://accounts.google.com/o/oauth2/v2/auth" +
-      "?client_id=" + encodeURIComponent(CLIENT_ID) +
-      "&redirect_uri=" + encodeURIComponent(REDIRECT) +
-      "&response_type=token" +
-      "&scope=" + encodeURIComponent(SCOPE) +
-      "&login_hint=" + encodeURIComponent(currentAcct || "") +
-      "&prompt=none";
-    window.location.href = url;
+  var tok = getToken();
+  if (!tok) {
+    var url = "https://accounts.google.com/o/oauth2/v2/auth"
+      + "?client_id=" + encodeURIComponent(CID)
+      + "&redirect_uri=" + encodeURIComponent(REDIR)
+      + "&response_type=token"
+      + "&scope=" + encodeURIComponent(SCOPE)
+      + "&login_hint=" + encodeURIComponent(curAcct || "")
+      + "&prompt=none";
+    location.href = url;
     return;
   }
-  doScan(token);
+  doScan(tok);
 }
 
-function doScan(token) {
-  hide("section-scan"); hide("section-results"); show("section-scanning");
+function doScan(tok) {
+  hide("sec-scan"); hide("sec-results"); show("sec-scanning");
   var ids = [];
 
-  function fetchIds(pt) {
-    var url = GMAIL + "/users/me/threads?labelIds=INBOX&maxResults=500&fields=nextPageToken,threads/id";
+  function fetchPage(pt) {
+    var url = API + "/users/me/threads?labelIds=INBOX&maxResults=500&fields=nextPageToken,threads/id";
     if (pt) url += "&pageToken=" + pt;
-    return fetch(url, { headers: { Authorization: "Bearer " + token } })
+    return fetch(url, { headers: { Authorization: "Bearer " + tok } })
       .then(function(r) { return r.json(); })
       .then(function(d) {
         (d.threads || []).forEach(function(t) { ids.push(t.id); });
-        if (d.nextPageToken && ids.length < 1000) return fetchIds(d.nextPageToken);
+        if (d.nextPageToken && ids.length < 1000) return fetchPage(d.nextPageToken);
       });
   }
 
-  fetchIds().then(function() {
-    document.getElementById("scan-status").textContent = "Found " + ids.length + " threads...";
-    var map = {}, done = 0, chunks = [];
+  fetchPage().then(function() {
+    var map = {}, done = 0;
+    var chunks = [];
     for (var i = 0; i < ids.length; i += 25) chunks.push(ids.slice(i, i + 25));
+    document.getElementById("scan-status").textContent = "Found " + ids.length + " threads...";
 
-    function processChunk(ci) {
+    function next(ci) {
       if (ci >= chunks.length) return Promise.resolve();
       return Promise.all(chunks[ci].map(function(id) {
-        return fetch(GMAIL + "/users/me/threads/" + id + "?format=metadata&metadataHeaders=From&fields=messages/payload/headers", { headers: { Authorization: "Bearer " + token } })
-          .then(function(r) { return r.json(); }).catch(function() { return {}; });
-      })).then(function(results) {
-        results.forEach(function(d) {
+        return fetch(API + "/users/me/threads/" + id + "?format=metadata&metadataHeaders=From&fields=messages/payload/headers",
+          { headers: { Authorization: "Bearer " + tok } })
+          .then(function(r) { return r.json(); })
+          .catch(function() { return {}; });
+      })).then(function(rows) {
+        rows.forEach(function(d) {
           var msgs = d.messages || [];
           if (!msgs.length) return;
           var hdrs = (msgs[0].payload && msgs[0].payload.headers) || [];
-          var fh = null;
-          for (var j = 0; j < hdrs.length; j++) { if (hdrs[j].name.toLowerCase() === "from") { fh = hdrs[j].value; break; } }
+          var fh = "";
+          for (var j = 0; j < hdrs.length; j++) {
+            if (hdrs[j].name.toLowerCase() === "from") { fh = hdrs[j].value; break; }
+          }
           if (!fh) return;
           var name = fh, email = fh;
           var m = fh.match(/^(.*?)\s*<([^>]+)>/);
           if (m) { name = m[1].trim().replace(/^['"]+|['"]+$/g, ""); email = m[2].trim().toLowerCase(); }
-          else email = fh.trim().toLowerCase();
+          else { email = fh.trim().toLowerCase(); }
           if (!map[email]) map[email] = { name: name, email: email, count: 0 };
           map[email].count++;
         });
         done += chunks[ci].length;
         document.getElementById("prog-bar").style.width = Math.round(done / ids.length * 100) + "%";
         document.getElementById("scan-status").textContent = "Scanned " + done + " / " + ids.length;
-        return processChunk(ci + 1);
+        return next(ci + 1);
       });
     }
 
-    return processChunk(0).then(function() {
-      senders = Object.keys(map).map(function(k) { return map[k]; }).sort(function(a, b) { return b.count - a.count; });
+    return next(0).then(function() {
+      senders = Object.keys(map).map(function(k) { return map[k]; })
+        .sort(function(a, b) { return b.count - a.count; });
       senders.forEach(function(s) { s.cat = classify(s); });
-      hide("section-scanning"); show("section-results");
-      renderResults();
+      hide("sec-scanning"); show("sec-results");
+      renderAll();
       toast("Found " + senders.length + " senders");
     });
   }).catch(function(e) {
-    hide("section-scanning"); show("section-scan");
-    showMsg("Scan failed: " + e.message, "err");
+    hide("sec-scanning"); show("sec-scan");
+    msg("Scan failed: " + e.message, "err");
   });
 }
 
@@ -295,51 +305,105 @@ function classify(s) {
   return "regular";
 }
 
-function renderResults() {
+function renderAll() {
   var total = senders.reduce(function(a, s) { return a + s.count; }, 0);
   var spam = senders.filter(function(s) { return s.cat === "spam"; });
   var news = senders.filter(function(s) { return s.cat === "newsletter"; });
-  var cleanable = spam.concat(news).reduce(function(a, s) { return a + s.count; }, 0);
-  document.getElementById("stats-grid").innerHTML =
-    sc("accent","&#128231;","Total Emails",total,"in your inbox") +
-    sc("","&#128101;","Senders",senders.length,"unique") +
-    sc("danger","&#128680;","Spam / Bulk",spam.length+news.length,(spam.reduce(function(a,s){return a+s.count;},0)+news.reduce(function(a,s){return a+s.count;},0))+" emails") +
-    sc("warning","&#129529;","Cleanable",cleanable,"emails to trash");
-  var tl = { all:"All", spam:"Spam", newsletter:"Newsletter", regular:"Regular" };
-  document.getElementById("ftabs").innerHTML = ["all","spam","newsletter","regular"].map(function(f) {
-    return '<button class="ftab'+(f===activeFilter?" on":"")+'" onclick="setFilter(\''+f+'\')">'+tl[f]+'</button>';
-  }).join("");
+  var clean = spam.concat(news).reduce(function(a, s) { return a + s.count; }, 0);
+
+  var grid = document.getElementById("stats-grid");
+  grid.innerHTML = "";
+  [
+    { cls: "accent", icon: "📧", label: "Total Emails", val: total, sub: "in your inbox" },
+    { cls: "", icon: "👥", label: "Senders", val: senders.length, sub: "unique" },
+    { cls: "danger", icon: "🚨", label: "Spam/Bulk", val: spam.length + news.length, sub: (spam.reduce(function(a,s){return a+s.count;},0) + news.reduce(function(a,s){return a+s.count;},0)) + " emails" },
+    { cls: "warning", icon: "🧹", label: "Cleanable", val: clean, sub: "emails to trash" }
+  ].forEach(function(c) {
+    var d = document.createElement("div");
+    d.className = "stat " + c.cls;
+    d.innerHTML = "";
+    var icon = document.createElement("div"); icon.className = "stat-icon"; icon.textContent = c.icon;
+    var lbl = document.createElement("div"); lbl.className = "stat-label"; lbl.textContent = c.label;
+    var val = document.createElement("div"); val.className = "stat-value"; val.textContent = c.val;
+    var sub = document.createElement("div"); sub.className = "stat-sub"; sub.textContent = c.sub;
+    d.appendChild(icon); d.appendChild(lbl); d.appendChild(val); d.appendChild(sub);
+    grid.appendChild(d);
+  });
+
+  var tabs = document.getElementById("ftabs");
+  tabs.innerHTML = "";
+  ["all","spam","newsletter","regular"].forEach(function(f) {
+    var b = document.createElement("button");
+    b.className = "ftab" + (f === filter ? " on" : "");
+    b.textContent = { all:"All", spam:"Spam", newsletter:"Newsletter", regular:"Regular" }[f];
+    b.onclick = function() { setFilter(f); };
+    tabs.appendChild(b);
+  });
+
   renderRows();
 }
 
-function sc(cls, icon, label, value, sub) {
-  return '<div class="stat '+cls+'"><div class="stat-icon">'+icon+'</div><div class="stat-label">'+label+'</div><div class="stat-value">'+value+'</div><div class="stat-sub">'+sub+'</div></div>';
-}
-
 function renderRows() {
-  var list = activeFilter === "all" ? senders : senders.filter(function(s) { return s.cat === activeFilter; });
-  document.getElementById("sender-rows").innerHTML = list.length === 0
-    ? '<div style="padding:32px;text-align:center;color:#64748b">No senders here</div>'
-    : list.map(function(s) {
-        var ee = esc(s.email);
-        return '<div class="row">'+
-          '<input type="checkbox" class="row-cb" data-email="'+ee+'" data-count="'+s.count+'" onchange="updateBulk()" style="width:18px;height:18px;flex-shrink:0;accent-color:#6366f1">'+
-          '<div class="dot '+s.cat+'"></div>'+
-          '<div class="sinfo"><div class="sname">'+esc(s.name!==s.email?s.name:s.email)+'</div><div class="saddr">'+ee+'</div></div>'+
-          '<div class="scnt">'+s.count+'</div>'+
-          '<span class="badge '+s.cat+'">'+(s.cat==="spam"?"Spam":"Newsletter")+'</span>'+
-          '<button class="btn btn-danger btn-sm" onclick="trashOne(\''+ee+'\',this)">Trash</button>'+
-          '</div>';
-      }).join("");
+  var list = filter === "all" ? senders : senders.filter(function(s) { return s.cat === filter; });
+  var container = document.getElementById("sender-rows");
+  container.innerHTML = "";
+
+  if (!list.length) {
+    var empty = document.createElement("div");
+    empty.style.cssText = "padding:32px;text-align:center;color:#64748b";
+    empty.textContent = "No senders in this category";
+    container.appendChild(empty);
+    return;
+  }
+
+  list.forEach(function(s) {
+    var row = document.createElement("div");
+    row.className = "sender-row";
+
+    var cb = document.createElement("input");
+    cb.type = "checkbox"; cb.className = "row-cb";
+    cb.dataset.email = s.email; cb.dataset.count = s.count;
+    cb.style.cssText = "width:18px;height:18px;flex-shrink:0;accent-color:#6366f1";
+    cb.onchange = updateBulk;
+
+    var dot = document.createElement("div");
+    dot.className = "dot " + s.cat;
+
+    var info = document.createElement("div"); info.className = "sinfo";
+    var nm = document.createElement("div"); nm.className = "sname";
+    nm.textContent = s.name !== s.email ? s.name : s.email;
+    var addr = document.createElement("div"); addr.className = "saddr";
+    addr.textContent = s.email;
+    info.appendChild(nm); info.appendChild(addr);
+
+    var cnt = document.createElement("div"); cnt.className = "scnt";
+    cnt.textContent = s.count + " emails";
+
+    var badge = document.createElement("span");
+    badge.className = "badge " + s.cat;
+    badge.textContent = s.cat === "spam" ? "Spam" : s.cat === "newsletter" ? "Newsletter" : "";
+    if (s.cat === "regular") badge.style.display = "none";
+
+    var btn = document.createElement("button");
+    btn.className = "btn btn-danger btn-sm";
+    btn.textContent = "Trash";
+    (function(email, b) {
+      b.onclick = function() { trashOne(email, b); };
+    })(s.email, btn);
+
+    row.appendChild(cb); row.appendChild(dot); row.appendChild(info);
+    row.appendChild(cnt); row.appendChild(badge); row.appendChild(btn);
+    container.appendChild(row);
+  });
   updateBulk();
 }
 
-function esc(s) { var d=document.createElement("div"); d.appendChild(document.createTextNode(String(s||""))); return d.innerHTML; }
-
 function setFilter(f) {
-  activeFilter = f;
+  filter = f;
   document.querySelectorAll(".ftab").forEach(function(b) { b.classList.remove("on"); });
-  document.querySelectorAll(".ftab").forEach(function(b) { if (b.textContent===({all:"All",spam:"Spam",newsletter:"Newsletter",regular:"Regular"}[f])) b.classList.add("on"); });
+  document.querySelectorAll(".ftab").forEach(function(b) {
+    if (b.textContent === { all:"All", spam:"Spam", newsletter:"Newsletter", regular:"Regular" }[f]) b.classList.add("on");
+  });
   renderRows();
 }
 
@@ -347,65 +411,80 @@ function updateBulk() {
   var checked = Array.prototype.slice.call(document.querySelectorAll(".row-cb:checked"));
   var bar = document.getElementById("bulk-bar");
   if (!checked.length) { bar.classList.remove("on"); return; }
-  var cnt = checked.reduce(function(a,c){return a+parseInt(c.dataset.count||0);},0);
-  document.getElementById("bulk-label").textContent = checked.length+" sender"+(checked.length!==1?"s":"")+" selected";
-  document.getElementById("bulk-sub").textContent = "~"+cnt+" emails will be trashed";
+  var cnt = checked.reduce(function(a, c) { return a + parseInt(c.dataset.count || 0); }, 0);
+  document.getElementById("bulk-label").textContent = checked.length + " sender" + (checked.length !== 1 ? "s" : "") + " selected";
+  document.getElementById("bulk-sub").textContent = "~" + cnt + " emails will be trashed";
   bar.classList.add("on");
 }
 
-function selectAll() { document.querySelectorAll(".row-cb").forEach(function(c){c.checked=true;}); updateBulk(); }
-function clearSel() { document.querySelectorAll(".row-cb:checked").forEach(function(c){c.checked=false;}); updateBulk(); }
+function selectAll() {
+  document.querySelectorAll(".row-cb").forEach(function(c) { c.checked = true; });
+  updateBulk();
+}
+
+function clearSel() {
+  document.querySelectorAll(".row-cb:checked").forEach(function(c) { c.checked = false; });
+  updateBulk();
+}
 
 function trashOne(email, btn) {
-  var token = getToken();
-  if (!token) { showMsg("Session expired — tap Scan again", "err"); return; }
-  if (!confirm("Trash all emails from "+email+"?")) return;
-  btn.disabled=true; btn.textContent="...";
-  doTrash(token, email).then(function(n) {
-    toast("Trashed "+n+" emails from "+email);
-    senders = senders.filter(function(s){return s.email!==email;});
-    renderResults();
-  }).catch(function(e){ toast("Error: "+e.message); btn.disabled=false; btn.textContent="Trash"; });
+  var tok = getToken();
+  if (!tok) { msg("Session expired — scan again", "err"); return; }
+  if (!confirm("Trash all emails from " + email + "?")) return;
+  btn.disabled = true; btn.textContent = "...";
+  doTrash(tok, email).then(function(n) {
+    toast("Trashed " + n + " emails from " + email);
+    senders = senders.filter(function(s) { return s.email !== email; });
+    renderAll();
+  }).catch(function(e) { toast("Error: " + e.message); btn.disabled = false; btn.textContent = "Trash"; });
 }
 
 function trashSelected() {
   var checked = Array.prototype.slice.call(document.querySelectorAll(".row-cb:checked"));
   if (!checked.length) return;
-  var token = getToken();
-  if (!token) { showMsg("Session expired — tap Scan again", "err"); return; }
-  if (!confirm("Trash emails from "+checked.length+" sender(s)?")) return;
+  var tok = getToken();
+  if (!tok) { msg("Session expired — scan again", "err"); return; }
+  if (!confirm("Trash emails from " + checked.length + " sender(s)?")) return;
   clearSel();
-  var emails = checked.map(function(c){return c.dataset.email;});
+  var emails = checked.map(function(c) { return c.dataset.email; });
   var total = 0, p = Promise.resolve();
   emails.forEach(function(email) {
     p = p.then(function() {
-      return doTrash(token, email)
-        .then(function(n){ total+=n; senders=senders.filter(function(s){return s.email!==email;}); })
-        .catch(function(){});
+      return doTrash(tok, email)
+        .then(function(n) { total += n; senders = senders.filter(function(s) { return s.email !== email; }); })
+        .catch(function() {});
     });
   });
-  p.then(function(){ toast("Trashed "+total+" emails"); renderResults(); });
+  p.then(function() { toast("Trashed " + total + " emails"); renderAll(); });
 }
 
-function doTrash(token, email) {
+function doTrash(tok, email) {
   var deleted = 0;
   function loop(pt) {
-    var url = GMAIL+"/users/me/threads?q="+encodeURIComponent("from:"+email+" in:inbox")+"&maxResults=100&fields=nextPageToken,threads/id";
-    if (pt) url += "&pageToken="+pt;
-    return fetch(url,{headers:{Authorization:"Bearer "+token}}).then(function(r){return r.json();}).then(function(d){
-      var threads = d.threads||[];
-      if (!threads.length) return deleted;
-      return Promise.all(threads.map(function(t){
-        return fetch(GMAIL+"/users/me/threads/"+t.id+"/trash",{method:"POST",headers:{Authorization:"Bearer "+token}});
-      })).then(function(){ deleted+=threads.length; if(d.nextPageToken) return loop(d.nextPageToken); return deleted; });
-    });
+    var url = API + "/users/me/threads?q=" + encodeURIComponent("from:" + email + " in:inbox")
+      + "&maxResults=100&fields=nextPageToken,threads/id";
+    if (pt) url += "&pageToken=" + pt;
+    return fetch(url, { headers: { Authorization: "Bearer " + tok } })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        var threads = d.threads || [];
+        if (!threads.length) return deleted;
+        return Promise.all(threads.map(function(t) {
+          return fetch(API + "/users/me/threads/" + t.id + "/trash",
+            { method: "POST", headers: { Authorization: "Bearer " + tok } });
+        })).then(function() {
+          deleted += threads.length;
+          if (d.nextPageToken) return loop(d.nextPageToken);
+          return deleted;
+        });
+      });
   }
   return loop();
 }
 
-checkToken();
-refreshAccounts();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(function(){});
+checkRedirect();
+loadAccounts();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(function() {});
 </script>
 </body>
 </html>
